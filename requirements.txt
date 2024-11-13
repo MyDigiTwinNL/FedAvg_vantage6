@@ -1,0 +1,9 @@
+vantage6-algorithm-tools
+pandas
+xlrd
+scikit-learn
+scipy==1.13.1
+torch
+configparser
+lifelines
+h5py
