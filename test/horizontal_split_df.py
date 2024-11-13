@@ -29,10 +29,15 @@ def main():
     print (df_split_1)
     print (df_split_2)
 
+    print (len(df_split_0))
+    print (len(df_split_1))
+    print (len(df_split_2))
+
+
     ## Save to separate csv files
-    df_split_0.to_csv("whas_split_0.csv", index=False)
-    df_split_1.to_csv("whas_split_1.csv", index=False)
-    df_split_2.to_csv("whas_split_2.csv", index=False)
+    # df_split_0.to_csv("whas_split_0.csv", index=False)
+    # df_split_1.to_csv("whas_split_1.csv", index=False)
+    # df_split_2.to_csv("whas_split_2.csv", index=False)
 
 
 

@@ -76,10 +76,12 @@ class NegativeLogLikelihood(nn.Module):
     def forward(self, risk_pred, y, e, model):
         
         mask = torch.ones(y.shape[0], y.shape[0]).to(self.device)
-        print ("mask", mask)
-        print ("y", y)
+        # print ("mask", mask)
+        # print ("y", y)
         mask[(y.T - y) > 0] = 0
-        print ("mask", mask)
+        # print ("mask", mask)
+        # print ("risk_pred", risk_pred)
+        # print ("torch.exp(risk_pred)", torch.exp(risk_pred))
 
         log_loss = torch.exp(risk_pred) * mask
         log_loss = torch.sum(log_loss, dim=0) / torch.sum(mask, dim=0)

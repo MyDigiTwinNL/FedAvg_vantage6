@@ -20,7 +20,7 @@ from dummy.utils import read_config
 # get path of current directory
 current_path = Path(__file__).parent
 current_dir = os.path.dirname(os.path.abspath(__file__))
-config_ini_filepath = os.path.join(current_dir, "whas.ini")
+config_ini_filepath = os.path.join(current_dir, "whas_ci.ini")
 
 def main():
 
@@ -72,7 +72,7 @@ def main():
     # Run the central method on 1 node and get the results
     central_task = client.task.create(
         input_={
-            "method":"central",
+            "method":"central_ci",
             "kwargs": {
                 "predictor_cols": predictor_cols,
                 "outcome_cols": outcome_cols,
@@ -104,6 +104,8 @@ def main():
     # # Get the results from the task
     # results = client.wait_for_results(task.get("id"))
     # print(results)
+
+
 
 
 if __name__ == '__main__':

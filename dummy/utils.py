@@ -10,6 +10,7 @@ import numpy as np
 import torch
 import configparser
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
 from lifelines.utils import concordance_index
 
@@ -97,15 +98,79 @@ def create_logger(logs_dir):
 
 
 ## train_test_split 
-def train_test_split(df, train_raio=0.6, random_state=0):
+# def tt_split(df, train_raio=0.6, random_state=0):
 
-    train_df = df.sample(frac = train_raio, random_state=random_state)
-    df_eval = df.drop(train_df.index)
-    val_df = df_eval.sample(frac = 0.5, random_state=random_state)
-    test_df = df_eval.drop(val_df.index)
+#     train_df = df.sample(frac = train_raio, random_state=random_state)
+#     df_eval = df.drop(train_df.index)
+#     val_df = df_eval.sample(frac = 0.5, random_state=random_state)
+#     test_df = df_eval.drop(val_df.index)
 
 
-    return train_df, val_df, test_df
+#     return train_df, val_df, test_df
+
+
+def tt_split(df_input, stratify_colname='FSTAT',
+                                         frac_train=0.6, frac_val=0.2, frac_test=0.2,
+                                         random_state=0):
+    '''
+    Splits a Pandas dataframe into three subsets (train, val, and test)
+    following fractional ratios provided by the user, where each subset is
+    stratified by the values in a specific column (that is, each subset has
+    the same relative frequency of the values in the column). It performs this
+    splitting by running train_test_split() twice.
+
+    Parameters
+    ----------
+    df_input : Pandas dataframe
+        Input dataframe to be split.
+    stratify_colname : str
+        The name of the column that will be used for stratification. Usually
+        this column would be for the label.
+    frac_train : float
+    frac_val   : float
+    frac_test  : float
+        The ratios with which the dataframe will be split into train, val, and
+        test data. The values should be expressed as float fractions and should
+        sum to 1.0.
+    random_state : int, None, or RandomStateInstance
+        Value to be passed to train_test_split().
+
+    Returns
+    -------
+    df_train, df_val, df_test :
+        Dataframes containing the three splits.
+    '''
+
+    if frac_train + frac_val + frac_test != 1.0:
+        raise ValueError('fractions %f, %f, %f do not add up to 1.0' % \
+                         (frac_train, frac_val, frac_test))
+
+    if stratify_colname not in df_input.columns:
+        raise ValueError('%s is not a column in the dataframe' % (stratify_colname))
+
+    X = df_input # Contains all columns.
+    y = df_input[[stratify_colname]] # Dataframe of just the column on which to stratify.
+
+    # Split original dataframe into train and temp dataframes.
+    df_train, df_temp, y_train, y_temp = train_test_split(X,
+                                                          y,
+                                                          stratify=y,
+                                                          test_size=(1.0 - frac_train),
+                                                          random_state=random_state)
+
+    # Split the temp dataframe into val and test dataframes.
+    relative_frac_test = frac_test / (frac_val + frac_test)
+    df_val, df_test, y_val, y_test = train_test_split(df_temp,
+                                                      y_temp,
+                                                      stratify=y_temp,
+                                                      test_size=relative_frac_test,
+                                                      random_state=random_state)
+
+    assert len(df_input) == len(df_train) + len(df_val) + len(df_test)
+
+
+
+    return df_train, df_val, df_test
 
 
 def vertical_split(df, predictor_cols, y_col, e_col):
@@ -195,20 +260,45 @@ def plot_train_curve(train_log, figure_temp_dir, update_iter, client_id):
 
     return
 
+def plot_train_curve_ci(train_log, figure_temp_dir, update_iter, client_id):
+
+    ## Save Training & validation curve
+    fig, ax = plt.subplots(1, 2, figsize=(14, 7))
+    ax = ax.ravel()
+
+    for i, metric in enumerate(["c-index", "loss"]):
+        ax[i].plot(train_log["train_" + metric])
+        ax[i].plot(train_log["val_" + metric])
+        ax[i].set_title("Model {}".format(metric), fontsize=16)
+        ax[i].set_xlabel("epochs", fontsize=16)
+        ax[i].set_ylabel(metric, fontsize=16)
+
+        ax[i].tick_params(axis="x", labelsize=14)
+        ax[i].tick_params(axis="y", labelsize=14)
+
+        ax[i].legend(["train", "val"], fontsize=16)
+
+    plt.savefig(os.path.join(figure_temp_dir, 'training_curves_ci_iter-%s_client-%s.png' %(update_iter, client_id) ), bbox_inches='tight')
+    # plt.savefig(os.path.join(figure_temp_dir, 'training_curves_iter-%s_client-%s.eps' %(update_iter, client_id) ), bbox_inches='tight')
+    plt.close()
+
+    return
+
 def plot_global_results(glo_result_list, figure_result_dir, metric):
 
-    xdata = range(len(glo_result_list))
-    ydata = glo_result_list
+    xdata = range(len(glo_result_list)-1)
+    ydata = glo_result_list[1:]
 
 
     # fig = plt.figure(figsize=(7.2, 4.2))
     fig = plt.figure()
 
-    plt.plot(xdata, ydata, 'go-')
-    # plt.legend(fontsize=10)
+    plt.plot(xdata, ydata, 'go-', label = "FedAvg")
+    plt.axhline(y= glo_result_list[0], color='r', linestyle='--' , label = "Before aggregation")
+    plt.legend(fontsize=10)
     plt.ylabel("Global %s" %metric, fontsize=15)
     plt.xlabel("Update iteration", fontsize=15)
-    plt.xticks(xdata, range(1, len(glo_result_list)+1), fontsize=13)
+    plt.xticks(xdata, range(1, len(glo_result_list)), fontsize=13, rotation=70 )
     plt.yticks(fontsize=13)
     plt.title("Global %s across update iteration" %metric)
     # plt.ylim([0,500])
@@ -224,7 +314,7 @@ def plot_global_results(glo_result_list, figure_result_dir, metric):
 
 def plot_local_results(local_result_list, figure_result_dir, metric):
 
-    xdata = range(len(local_result_list))
+    xdata = range(len(local_result_list)-1)
     ydata = []
     for i in range(len(local_result_list[0])):
         ydata.append([])
@@ -237,13 +327,15 @@ def plot_local_results(local_result_list, figure_result_dir, metric):
     # fig = plt.figure(figsize=(7.2, 4.2))
     fig = plt.figure()
     c_list = ['go-', 'ro-', 'bo-']
-    for index, c_i in zip(range(len(ydata)), c_list):
-        plt.plot(xdata, ydata[index], c_i, label = 'Client %s' %(index+1))
+    c_hl_list = ['g', 'r', 'b']
+    for index, c_i, c_hl in zip(range(len(ydata)), c_list, c_hl_list):
+        plt.plot(xdata, ydata[index][1:], c_i, label = 'FedAvg, client %s' %(index+1))
+        plt.axhline(y= ydata[index][0], color=c_hl, linestyle='--' , label = "Before aggregation, client %s " %(index+1))
 
     plt.legend(fontsize=10)
     plt.ylabel("Local %s" %metric, fontsize=15)
     plt.xlabel("Update iteration", fontsize=15)
-    plt.xticks(xdata, range(1, len(local_result_list)+1), fontsize=13)
+    plt.xticks(xdata, range(1, len(local_result_list)), fontsize=13, rotation=70 )
     plt.yticks(fontsize=13)
     plt.title("Local %s across update iteration" %metric)
     # plt.ylim([0,500])

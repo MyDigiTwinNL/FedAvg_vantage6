@@ -52,7 +52,8 @@ def partial(
     print ("client_id", client_id)
 
     info("Computing on client side")
-    train_df, val_df, test_df = train_test_split(df1)
+    # train_df, val_df, test_df = tt_split(df1)
+    train_df, val_df, test_df = tt_split(df1)
     # print (train_df)
     # print ("dl_config", dl_config)
 
@@ -89,6 +90,10 @@ def partial(
     train_data_size = len(train_dataset)
     val_data_size = len(val_dataset)
     test_data_size = len(test_dataset)   
+
+    print ("train_data_size", train_data_size)
+    print ("val_data_size", val_data_size)
+    print ("test_data_size", test_data_size)
 
     model = DeepSurv(dl_config['network']).to(device, dtype=float)
     learning_rate = dl_config['train']['learning_rate']
@@ -218,6 +223,7 @@ def partial(
     ## Test trained model and save 
     test_cm_dict = {}
     test_eval_dict = {}
+    test_pred_dict = {}
 
     output_list = []
     label_list = []
@@ -282,7 +288,8 @@ def partial(
     test_eval_dict['sensitivity'] = sensitivity
     test_eval_dict['auc_value'] = auc_value
 
-
+    test_pred_dict['y_test'] = y_test.tolist()
+    test_pred_dict['prediction_results'] = prediction_results
 
     ## return client's weights (after local training)
     ## https://github.com/itslastonenikhil/federated-learning/blob/main/FederatedLearning.ipynb
@@ -296,10 +303,11 @@ def partial(
     
     test_cm_dict = json.dumps(test_cm_dict)
     test_eval_dict = json.dumps(test_eval_dict)
+    test_pred_dict = json.dumps(test_pred_dict)
 
 
 
     # Return results to the vantage6 server.
-    return {"params": model_params_json, "num_train_samples": train_data_size, "test_cm": test_cm_dict, "test_eval": test_eval_dict}
+    return {"params": model_params_json, "num_train_samples": train_data_size, "test_cm": test_cm_dict, "test_eval": test_eval_dict, "test_pred": test_pred_dict}
 
 # TODO Feel free to add more partial functions here.

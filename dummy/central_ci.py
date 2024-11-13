@@ -13,11 +13,9 @@ import numpy as np
 from typing import Any
 from .utils import *
 from sklearn.metrics import confusion_matrix
-from sklearn.metrics import accuracy_score, roc_curve, auc, recall_score
 from vantage6.algorithm.tools.util import info, warn, error
 from vantage6.algorithm.tools.decorators import algorithm_client
 from vantage6.algorithm.client import AlgorithmClient
-
 
 torch.manual_seed(0)
 torch.use_deterministic_algorithms(True)
@@ -26,7 +24,7 @@ np.random.seed(0)
 
 
 @algorithm_client
-def central(
+def central_ci(
     client: AlgorithmClient, predictor_cols, outcome_cols, dl_config, num_update_iter
 ) -> Any:
 
@@ -39,15 +37,8 @@ def central(
     organizations = client.organization.list()
     org_ids = [organization.get("id") for organization in organizations]
 
-    global_acc_list = []
-    global_spe_list = []
-    global_sen_list = []
-    global_auc_list = []
-
-    local_acc_list = []
-    local_spe_list = []
-    local_sen_list = []
-    local_auc_list = []
+    global_ci_list = []
+    local_ci_list = []
 
 
     for i in range(num_update_iter):
@@ -61,7 +52,7 @@ def central(
         # Define input parameters for a subtask
         info("Defining input parameters")
         input_ = {
-            "method": "partial",
+            "method": "partial_risk_prediction",
             "kwargs": {
                 "predictor_cols": predictor_cols,
                 "outcome_cols": outcome_cols,
@@ -92,17 +83,11 @@ def central(
         params_list =[]
         num_train_samples_list = []
 
-        test_tn_list = []
-        test_fp_list = []
-        test_fn_list = []
-        test_tp_list = []
-        test_acc_list = []
-        test_spe_list = []
-        test_sen_list = []
-        test_auc_list = []
-
+        test_risk_pred_list = []
         test_y_list = []
-        test_pred_list = []
+        test_e_list = []
+
+        test_ci_list = []
 
 
         for r in results:
@@ -110,31 +95,26 @@ def central(
             num_train_samples = r["num_train_samples"]
             params = json.loads(params) 
 
+
+
             test_cm = r["test_cm"]
+            # test_cm = json2dict(test_cm)
             test_cm = json.loads(test_cm) 
+
             test_eval = r["test_eval"]
+            # test_eval = json2dict(test_eval)
             test_eval = json.loads(test_eval) 
-
-            test_pred = r["test_pred"] 
-            test_pred = json.loads(test_pred) 
-
 
             for entry in params:
                 # params[entry] = torch.from_numpy(np.array(params[entry]))
                 params[entry] = np.array(params[entry])
 
 
-            test_tn_list.append(test_cm['tn'])
-            test_fp_list.append(test_cm['fp'])
-            test_fn_list.append(test_cm['fn'])
-            test_tp_list.append(test_cm['tp'])
-            test_acc_list.append(test_eval['accuracy'])
-            test_spe_list.append(test_eval['specificity'])
-            test_sen_list.append(test_eval['sensitivity'])
-            test_auc_list.append(test_eval['auc_value'])
-
-            test_y_list.append(test_pred['y_test'])
-            test_pred_list.append(test_pred['prediction_results'])
+            test_risk_pred_list.append(test_cm['risk_pred'])
+            test_y_list.append(test_cm['y'])
+            test_e_list.append(test_cm['e'])
+ 
+            test_ci_list.append(test_eval['ci'])
 
 
             params_list.append(params)
@@ -145,59 +125,32 @@ def central(
         
 
         ## Compute global results
-        tn = sum(test_tn_list)
-        fp = sum(test_fp_list)
-        fn = sum(test_fn_list)
-        tp = sum(test_tp_list)
-
+        risk_pred_stack = np.concatenate( test_risk_pred_list, axis=0 )
         y_stack = np.concatenate( test_y_list, axis=0 )
-        pred_stack = np.concatenate( test_pred_list, axis=0 )
+        e_stack = np.concatenate( test_e_list, axis=0 )
 
-        fpr, tpr, thresholds = roc_curve(y_stack, pred_stack)
-        glo_auc = auc(fpr, tpr)
 
-        glo_accuracy = (tp+tn) / (tp+fp+fn+tn)
-        glo_specificity = tn / (tn + fp)
-        glo_sensitivity = tp / (tp + fn) 
+        glo_ci = c_index(-risk_pred_stack, y_stack, e_stack)
 
-        global_acc_list.append(glo_accuracy)
-        global_spe_list.append(glo_specificity)
-        global_sen_list.append(glo_sensitivity)
-        global_auc_list.append(glo_auc)
 
-        local_acc_list.append(test_acc_list)
-        local_spe_list.append(test_spe_list)
-        local_sen_list.append(test_sen_list)
-        local_auc_list.append(test_auc_list)
+        global_ci_list.append(glo_ci)
+
+        local_ci_list.append(test_ci_list)
 
         ## Plot training curves
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        figure_result_dir = os.path.join(current_dir, "figure_results_")
+        figure_result_dir = os.path.join(current_dir, "figure_ci_results")
         if not os.path.exists(figure_result_dir):
             os.makedirs(figure_result_dir)
 
-        plot_global_results(global_acc_list, figure_result_dir, "accuracy")
-        plot_global_results(global_spe_list, figure_result_dir, "specificity")
-        plot_global_results(global_sen_list, figure_result_dir, "sensitivity")
-        plot_global_results(global_auc_list, figure_result_dir, "AUC")
+        plot_global_results(global_ci_list, figure_result_dir, "C-statistics")
 
-        plot_local_results(local_acc_list, figure_result_dir, "accuracy")
-        plot_local_results(local_spe_list, figure_result_dir, "specificity")
-        plot_local_results(local_sen_list, figure_result_dir, "sensitivity")
-        plot_local_results(local_auc_list, figure_result_dir, "AUC")
 
-            # model_state_dict = json.loads(r)
-            # print ("model_state_dict", model_state_dict)
-            # total_sum += r["sum"]
-            # total_count += r["count"]
+        plot_local_results(local_ci_list, figure_result_dir, "C-statistics")
 
-        #  return {}
 
-        print ("global_acc_list", global_acc_list)
-        print ("local_acc_list", local_acc_list)
-
-        print ("global_auc_list", global_auc_list)
-        print ("local_auc_list", local_auc_list)
+        print ("global_ci_list", global_ci_list)
+        print ("local_ci_list", local_ci_list)
 
 
     return i
