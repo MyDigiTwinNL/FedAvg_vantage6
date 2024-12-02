@@ -9,13 +9,12 @@ def main():
 
     ## Load CSV file
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_dir = os.path.join(current_dir, "csv")
-    data_filepath = os.path.join(csv_dir, "patient_t2e_df.csv")
-    df_full = pd.read_csv(data_filepath)
+    data_filepath = os.path.join(current_dir, "whasncc2.xls")
+    df_full = pd.read_excel(data_filepath)
     print ("df full", df_full)
 
     ## Add index (pseudo_id)
-    # df_full["pseudo_id"] = np.arange(len(df_full))
+    df_full["pseudo_id"] = np.arange(len(df_full))
     print ("df full", df_full)
 
     ## Horizontal split, n=3 (50%, 30%, 20%)
@@ -35,10 +34,10 @@ def main():
     print (len(df_split_2))
 
 
-    # Save to separate csv files
-    df_split_0.to_csv("lifelines_fhir_0.csv", index=False)
-    df_split_1.to_csv("lifelines_fhir_1.csv", index=False)
-    df_split_2.to_csv("lifelines_fhir_2.csv", index=False)
+    ## Save to separate csv files
+    # df_split_0.to_csv("whas_split_0.csv", index=False)
+    # df_split_1.to_csv("whas_split_1.csv", index=False)
+    # df_split_2.to_csv("whas_split_2.csv", index=False)
 
 
 

@@ -10,7 +10,7 @@ import numpy as np
 import torch
 import configparser
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split, StratifiedKFold
+from sklearn.model_selection import train_test_split
 
 from lifelines.utils import concordance_index
 
@@ -173,49 +173,6 @@ def tt_split(df_input, stratify_colname='FSTAT',
     return df_train, df_val, df_test
 
 
-def ci_split(df_input, stratify_colname='FSTAT', n_fold = 10, 
-                                         frac_train=0.8, frac_val=0.1, frac_test=0.1,
-                                         random_state=0, fold_index=0):
-    '''
-    StratifiedKFold for confidence interval
-    '''
-    skf = StratifiedKFold(n_splits=n_fold)
-
-    X = df_input # Contains all columns.
-    y = df_input[[stratify_colname]] # Dataframe of just the column on which to stratify.
-
-
-    for i, (train_index, test_index) in enumerate(skf.split(X, y)):
-        # print(f"Fold {i}:")
-        # print(f"  Train: index={train_index}")
-        # print(f"  Test:  index={test_index}")
-        # print ("len(train_index)", len(train_index))
-        # print ("len(test_index)", len(test_index))
-        if i == fold_index:
-            selected_k_train_index = train_index
-            selected_k_test_index = test_index
-
-
-    df_train = X.loc[selected_k_train_index]
-    df_test = X.loc[selected_k_test_index]
-    y_train = y.loc[selected_k_train_index]
-    y_test = y.loc[selected_k_test_index]
-
-
-    # Split original dataframe into train and temp dataframes.
-    relative_frac_test = len(y_test)/len(y_train)
-    df_train, df_val, y_train, y_val = train_test_split(df_train,
-                                                      y_train,
-                                                      stratify=y_train,
-                                                      test_size=relative_frac_test,
-                                                      random_state=random_state)
-
-    # assert len(df_input) == len(df_train) + len(df_val) + len(df_test)
-
-    return df_train, df_val, df_test
-
-
-
 def vertical_split(df, predictor_cols, y_col, e_col):
 
     ''' The function to parsing data from df.
@@ -327,34 +284,6 @@ def plot_train_curve_ci(train_log, figure_temp_dir, update_iter, client_id):
 
     return
 
-# def plot_global_results(glo_result_list, figure_result_dir, metric):
-
-#     xdata = range(len(glo_result_list)-1)
-#     ydata = glo_result_list[1:]
-
-
-#     # fig = plt.figure(figsize=(7.2, 4.2))
-#     fig = plt.figure()
-
-#     plt.plot(xdata, ydata, 'go-', label = "FedAvg")
-#     plt.axhline(y= glo_result_list[0], color='r', linestyle='--' , label = "Before aggregation")
-#     plt.legend(fontsize=10)
-#     plt.ylabel("Global %s" %metric, fontsize=15)
-#     plt.xlabel("Update iteration", fontsize=15)
-#     plt.xticks(xdata, range(1, len(glo_result_list)), fontsize=13, rotation=70 )
-#     plt.yticks(fontsize=13)
-#     plt.title("Global %s across update iteration" %metric)
-#     # plt.ylim([0,500])
-
-#     fig.savefig(os.path.join(figure_result_dir, 'global_eval_%s.png' %metric), dpi=500 ,bbox_inches='tight')
-#     # fig.savefig(os.path.join(figure_result_dir, 'global_eval_%s.png' %metric), dpi=1500 ,bbox_inches='tight')
-
-
-#     plt.close()
-
-#     return
-
-
 def plot_global_results(glo_result_list, figure_result_dir, metric):
 
     xdata = range(len(glo_result_list)-1)
@@ -362,20 +291,20 @@ def plot_global_results(glo_result_list, figure_result_dir, metric):
 
 
     # fig = plt.figure(figsize=(7.2, 4.2))
-    fig = plt.figure(figsize=(4,3))
+    fig = plt.figure()
 
     plt.plot(xdata, ydata, 'go-', label = "FedAvg")
     plt.axhline(y= glo_result_list[0], color='r', linestyle='--' , label = "Before aggregation")
-    plt.legend(loc = "upper left", fontsize=11)
+    plt.legend(fontsize=10)
     plt.ylabel("Global %s" %metric, fontsize=15)
     plt.xlabel("Update iteration", fontsize=15)
-    plt.xticks(xdata, range(1, len(glo_result_list)), fontsize=12, rotation=70 )
-    plt.yticks(fontsize=12)
-    # plt.title("Global %s across update iteration" %metric)
+    plt.xticks(xdata, range(1, len(glo_result_list)), fontsize=13, rotation=70 )
+    plt.yticks(fontsize=13)
+    plt.title("Global %s across update iteration" %metric)
     # plt.ylim([0,500])
 
-    fig.savefig(os.path.join(figure_result_dir, 'global_eval_%s_lifelines.png' %metric), dpi=500 ,bbox_inches='tight')
-    fig.savefig(os.path.join(figure_result_dir, 'global_eval_%s_lifelines.eps' %metric), dpi=500 ,bbox_inches='tight')
+    fig.savefig(os.path.join(figure_result_dir, 'global_eval_%s.png' %metric), dpi=500 ,bbox_inches='tight')
+    # fig.savefig(os.path.join(figure_result_dir, 'global_eval_%s.png' %metric), dpi=1500 ,bbox_inches='tight')
 
 
     plt.close()
@@ -396,23 +325,23 @@ def plot_local_results(local_result_list, figure_result_dir, metric):
 
 
     # fig = plt.figure(figsize=(7.2, 4.2))
-    fig = plt.figure(figsize=(4,3))
+    fig = plt.figure()
     c_list = ['go-', 'ro-', 'bo-']
     c_hl_list = ['g', 'r', 'b']
     for index, c_i, c_hl in zip(range(len(ydata)), c_list, c_hl_list):
         plt.plot(xdata, ydata[index][1:], c_i, label = 'FedAvg, client %s' %(index+1))
-        plt.axhline(y= ydata[index][0], color=c_hl, linestyle='--' , label = "Before aggr., client %s " %(index+1))
+        plt.axhline(y= ydata[index][0], color=c_hl, linestyle='--' , label = "Before aggregation, client %s " %(index+1))
 
-    plt.legend(fontsize=8)
+    plt.legend(fontsize=10)
     plt.ylabel("Local %s" %metric, fontsize=15)
     plt.xlabel("Update iteration", fontsize=15)
-    plt.xticks(xdata, range(1, len(local_result_list)), fontsize=12, rotation=70 )
-    plt.yticks(fontsize=12)
-    # plt.title("Local %s across update iteration" %metric)
+    plt.xticks(xdata, range(1, len(local_result_list)), fontsize=13, rotation=70 )
+    plt.yticks(fontsize=13)
+    plt.title("Local %s across update iteration" %metric)
     # plt.ylim([0,500])
 
-    fig.savefig(os.path.join(figure_result_dir, 'local_eval_%s_lifelines.png' %metric), dpi=500 ,bbox_inches='tight')
-    fig.savefig(os.path.join(figure_result_dir, 'local_eval_%s_lifelines.eps' %metric), dpi=500 ,bbox_inches='tight')
+    fig.savefig(os.path.join(figure_result_dir, 'local_eval_%s.png' %metric), dpi=500 ,bbox_inches='tight')
+    # fig.savefig(os.path.join(figure_result_dir, 'global_eval_%s.png' %metric), dpi=1500 ,bbox_inches='tight')
 
 
     plt.close()

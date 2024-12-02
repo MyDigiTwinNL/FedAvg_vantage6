@@ -25,7 +25,7 @@ np.random.seed(0)
 
 @algorithm_client
 def central_ci(
-    client: AlgorithmClient, predictor_cols, outcome_cols, dl_config, num_update_iter, n_fold, fold_index
+    client: AlgorithmClient, predictor_cols, outcome_cols, dl_config, num_update_iter
 ) -> Any:
 
     """ Central part of the algorithm """
@@ -58,10 +58,7 @@ def central_ci(
                 "outcome_cols": outcome_cols,
                 "dl_config": dl_config,
                 "avged_params": avged_params,
-                "update_iter": i,
-                "n_fold": n_fold,
-                "fold_index": fold_index
-
+                "update_iter": i
             }
         }
 
@@ -142,27 +139,18 @@ def central_ci(
 
         ## Plot training curves
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        figure_result_dir = os.path.join(current_dir, "figure_ci_results_%s" %fold_index)
+        figure_result_dir = os.path.join(current_dir, "figure_ci_results")
         if not os.path.exists(figure_result_dir):
             os.makedirs(figure_result_dir)
 
-        plot_global_results(global_ci_list, figure_result_dir, "C-statistic")
+        plot_global_results(global_ci_list, figure_result_dir, "C-statistics")
 
 
-        plot_local_results(local_ci_list, figure_result_dir, "C-statistic")
+        plot_local_results(local_ci_list, figure_result_dir, "C-statistics")
 
 
         print ("global_ci_list", global_ci_list)
         print ("local_ci_list", local_ci_list)
-
-
-    ttest_dir = os.path.join(current_dir, "ttest_ci")
-    if not os.path.exists(ttest_dir):
-        os.makedirs(ttest_dir)
-
-    np.save(os.path.join(ttest_dir, "global_ci_%s.npy" %fold_index ), np.array(global_ci_list))
-    np.save(os.path.join(ttest_dir, "local_ci_%s.npy" %fold_index), np.array(local_ci_list))
-
 
 
     return i

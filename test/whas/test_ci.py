@@ -12,10 +12,6 @@ installed. This can be done by running:
     pip install vantage6-algorithm-tools
 """
 import os,sys
-
-sys.path.append('../')
-
-
 from vantage6.algorithm.tools.mock_client import MockAlgorithmClient
 from pathlib import Path
 import pandas as pd
