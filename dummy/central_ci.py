@@ -30,8 +30,8 @@ def central_ci(
 ) -> Any:
     '''
     AlgorithmClient:
-    predictor_cols: a python list of selected predictors from the harmonized FHIR data (i.e., column names for predictors presented in the flattened FHIR data)
-    outcome_cols: a python list of outcome variables from the harmonized FHIR data (i.e., column names for outcome variables presented in the flattened FHIR data)
+    predictor_cols: a python list of selected predictors after further data preparation step by "data_prep.py" from the harmonized FHIR data 
+    outcome_cols: a python list of outcome variables after further data preparation step by "data_prep.py" from the harmonized FHIR data, it should contrain 'LENFOL'(length of follow-up) and 'FSTAT' (event occurence)
     dl_config: hyperparameter values regarding a neural network architecture and its training (specified in the configuration ini file)
     num_update_iter: the number of aggregation iterations (set to 20 in our PoC)
     n_fold: the number of folds in the data splitting in each client for train/valid/test(set to 10 in our PoC)
@@ -84,7 +84,6 @@ def central_ci(
             description="Training task on each client"
         )
 
-
         # wait for node to return results of the subtask.
         info("Waiting for results")
         results = client.wait_for_results(task_id=task.get("id"))
@@ -122,7 +121,6 @@ def central_ci(
             test_ci_list.append(test_eval['ci'])
             params_list.append(params)
             num_train_samples_list.append(num_train_samples)
-
 
         ## Weighed averging of the weight from local models
         # See fed_avg function in utils.py
