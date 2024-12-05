@@ -1,12 +1,10 @@
 Implementation
 ==============
 
-<p align="center">
-  <img height="450" src="implementation_overview.JPG">
-</p>
 
 .. image:: implementation_overview.JPG
-   :width: 600
+    :align: center
+    :width: 700
 
 Overview
 --------
