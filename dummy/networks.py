@@ -1,7 +1,9 @@
-# ------------------------------------------------------------------------------
-# --coding='utf-8'--
-# Written by czifan (czifan@pku.edu.cn)
-# ------------------------------------------------------------------------------
+'''
+Python script for creating CVD risk prediction models which is a neural network (based on the python implementation of DeepSurv)
+Please note that it architecture and other hyperparameters' values are determined as the values specified in the configuration file (having "ini" extentation).
+'''
+
+
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function

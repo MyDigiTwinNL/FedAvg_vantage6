@@ -1,5 +1,5 @@
 '''
-Python script for common function for partial tasks
+Python script for common functions for Partials and performance evaluation.
 '''
 import os
 import time
@@ -95,18 +95,6 @@ def create_logger(logs_dir):
     logger.addHandler(console)
 
     return logger
-
-
-## train_test_split 
-# def tt_split(df, train_raio=0.6, random_state=0):
-
-#     train_df = df.sample(frac = train_raio, random_state=random_state)
-#     df_eval = df.drop(train_df.index)
-#     val_df = df_eval.sample(frac = 0.5, random_state=random_state)
-#     test_df = df_eval.drop(val_df.index)
-
-
-#     return train_df, val_df, test_df
 
 
 def tt_split(df_input, stratify_colname='FSTAT',
