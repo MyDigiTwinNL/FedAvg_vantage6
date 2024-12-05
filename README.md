@@ -2,7 +2,7 @@
 Implementation of FedAvg on vantage6.
 
 <p align="center">
-  <img height="200" src="research_infra_mdt_poc.JPG">
+  <img height="450" src="research_infra_mdt_poc.JPG">
 </p>
 
 
