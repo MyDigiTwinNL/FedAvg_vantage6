@@ -11,11 +11,10 @@ This repository includes the implementation of federated learning on Vantage6 in
 
 
 # Acknowledgement
-```
-This work (in particular, horizontal splitting on Lifelines for a PoC) is the part of our manuscipt, "MyDigiTwin: A Privacy-Preserving Framework for Personalized Cardiovascular Risk Prediction and Scenario Exploration", that has been submitted to  the special issue on "Building Digital Twins for Personalized Cardiovascular Medicine" in the journal Computers in Biology and Medicine.
-```
 
 
-```
- This work is the part of the project MyDigiTwin with project number 628.011.213 of the research programme ``COMMIT2DATA – Big Data & Health'' which is partly financed by the Dutch Research Council (NWO)
-```
+_This work (in particular, horizontal splitting on Lifelines for a PoC) is the part of our manuscipt, "MyDigiTwin: A Privacy-Preserving Framework for Personalized Cardiovascular Risk Prediction and Scenario Exploration", that has been submitted to  the special issue on "Building Digital Twins for Personalized Cardiovascular Medicine" in the journal Computers in Biology and Medicine._
+
+
+_This work is the part of the project MyDigiTwin with project number 628.011.213 of the research programme ``COMMIT2DATA – Big Data & Health'' which is partly financed by the Dutch Research Council (NWO)_
+
