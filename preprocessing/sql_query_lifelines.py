@@ -31,8 +31,10 @@ def sql_to_dataframe(db_file_path:str)->DataFrame:
         if table_name == "sqlite_stat1":
             continue
         
+        #print("reading table ",table_name)
         variable_df = pd.read_sql("SELECT * from %s" %table_name, conn) # ['VALUE', 'EFFECTIVE_DATE', 'UNIT', 'PATIENTID']
-        #print (variable_df)
+        
+
         # print (variable_df.columns)
         if table_name == "SMOKING":        
             variable_df = variable_df[['STATUS' , 'QUANTITY', 'PATIENTID']]
@@ -54,7 +56,7 @@ def sql_to_dataframe(db_file_path:str)->DataFrame:
         ## merge patient_df with variable_df based on 'PATIENTID'
         patient_df = pd.merge(patient_df, variable_df, on = 'PATIENTID', how = "left", suffixes = ('', f'_{table_name}')) 
 
-        return patient_df
+    return patient_df
 
 
 def main():

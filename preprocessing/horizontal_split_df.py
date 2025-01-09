@@ -1,17 +1,20 @@
-
-import os, sys
+import argparse
 import pandas as pd
-import numpy as np
+import os
 
 random_state = 0
 
 def main():
 
+    parser = argparse.ArgumentParser(description="CSV random splitter")
+    
+    parser.add_argument("input_csv", type=str, help="Path to input CSV file")
+    parser.add_argument("output_folder", type=str, help="Output files location")
+    
+    args = parser.parse_args()
+
     ## Load CSV file
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    csv_dir = os.path.join(current_dir, "csv")
-    data_filepath = os.path.join(csv_dir, "patient_t2e_df.csv")
-    df_full = pd.read_csv(data_filepath)
+    df_full = pd.read_csv(args.input_csv)
     print ("df full", df_full)
 
     ## Add index (pseudo_id)
@@ -34,13 +37,14 @@ def main():
     print (len(df_split_1))
     print (len(df_split_2))
 
+    output_file_0 = os.path.join(args.output_folder, f"{args.input_csv}.0.csv")
+    output_file_1 = os.path.join(args.output_folder, f"{args.input_csv}.1.csv")
+    output_file_2 = os.path.join(args.output_folder, f"{args.input_csv}.2.csv")
 
     # Save to separate csv files
-    df_split_0.to_csv("lifelines_fhir_0.csv", index=False)
-    df_split_1.to_csv("lifelines_fhir_1.csv", index=False)
-    df_split_2.to_csv("lifelines_fhir_2.csv", index=False)
-
-
+    df_split_0.to_csv(output_file_0, index=False)
+    df_split_1.to_csv(output_file_1, index=False)
+    df_split_2.to_csv(output_file_2, index=False)
 
 
 if __name__ == '__main__':
