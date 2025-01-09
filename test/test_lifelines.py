@@ -21,6 +21,7 @@ import pandas as pd
 from dummy.utils import read_config
 import argparse
 # get path of current directory
+
 current_path = Path(__file__).parent
 current_dir = os.path.dirname(os.path.abspath(__file__))
 config_ini_filepath = os.path.join(current_dir, "lifelines_ci.ini")
@@ -43,19 +44,19 @@ def main():
         datasets=[
             # Data for first organization
             [{
-                "database": current_path / "lifelines_fhir_0.csv",
+                "database": f"{current_path}/dummy_test_data/fhir.dummydata.10k.preprocessed.csv.0.csv",
                 "db_type": "csv",
                 "input_data": {}
             }],
             # Data for second organization
             [{
-                "database": current_path / "lifelines_fhir_1.csv",
+                "database": f"{current_path}/dummy_test_data/fhir.dummydata.10k.preprocessed.csv.1.csv",
                 "db_type": "csv",
                 "input_data": {}
             }],
             # Data for third organization
             [{
-                "database": current_path / "lifelines_fhir_2.csv",
+                "database": f"{current_path}/dummy_test_data/fhir.dummydata.10k.preprocessed.csv.2.csv",
                 "db_type": "csv",
                 "input_data": {}
             }],
@@ -65,7 +66,7 @@ def main():
 
     ## get column name
     ## Description regarding benchmark, https://web.archive.org/web/20170515104524/http://www.umass.edu/statdata/statdata/data/whasncc2.txt
-    df_template = pd.read_csv('lifelines_fhir_0.csv')
+    df_template = pd.read_csv('dummy_test_data/fhir.dummydata.10k.csv')
     list_of_column_names = list(df_template.columns)
     # print ("list_of_column_names", list_of_column_names)
 
