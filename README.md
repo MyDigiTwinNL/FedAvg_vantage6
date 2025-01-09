@@ -10,7 +10,7 @@ This repository includes a vantage6-compliant proof-of-concept algorithm for tra
 
 ### Data pre-processing
 
-This algorithms works with federated datasets (registered within a vantage6 collaboration nodes) that follow the data harmonization approach defined for the MyDigiTwin infrastructure. The algorithm requires, on each node, to pre-process the harmonized datasets with the scripts included on the folder `preprocessing`. This pre-processed CSV file is the one to be enabled on each vantage6 node. This pre-processing process is performed as follows:
+This algorithms works with federated datasets (registered within a vantage6 collaboration nodes) that follow the data harmonization approach defined for the MyDigiTwin infrastructure. The algorithm requires, on each node, to pre-process the harmonized datasets with the scripts included on the `preprocessing` folder. This pre-processed CSV file is the one to be enabled on each vantage6 node. This pre-processing is performed as follows:
 
 ```bash
 python sqlite_to_csv.py <harmonized_db_path> <target_harmonized_csv_file>
