@@ -1,0 +1,28 @@
+#!/bin/bash
+#SBATCH --job-name=lifelines_deepsurv  ### Name your job so you can distinguish between jobs
+#SBATCH --time=01:00:00                ### 
+#SBATCH --cpus-per-task=1              ### How much RAM memory do you need?
+#SBATCH --mem=32000           ### How much RAM memory do you need?
+#SBATCH --export=None           
+#SBATCH --get-user-env=L60  
+#SBATCH -o lifelines_ci_9_o.log        ### Where to store the console output (%j is the job number)
+#SBATCH -e lifelines_ci_9_e.log      ### Where to store the error output
+
+# Load the modules
+# Wiki: https://docs.gcc.rug.nl/gearshift/analysis/
+# SLURM: https://www.youtube.com/watch?v=185u3sPvvOE&list=PLRGU7h8Ur4N7g9bGugTHvVdF42O8bnwej&index=4
+module purge
+# automatically loads all dependencies such as cuda
+# replace with required tensorflow version! (check with module avail which tensorflow version are available)
+# module load TensorFlow/2.2.0-fosscuda-2019b-Python-3.7.4  
+module load Python/3.10.4-GCCcore-11.3.0
+
+# use when you need to read/write many files quickly in tmp directory:
+# source /tmp/${SLURM_JOB_USER}.${SLURM_JOB_ID}/prolog.env
+
+# activate virtualenv after loading tensorflow/python module
+# replace with your own virtualenv!
+source /groups/umcg-lifelines/tmp01/projects/ov22_0581/hmo/hmo_lifelines/bin/activate
+
+python test/test_lifelines.py --fold_index 9
+# python tensorflow_hello.py

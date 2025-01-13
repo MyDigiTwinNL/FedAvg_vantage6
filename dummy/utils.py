@@ -222,13 +222,29 @@ def vertical_split(df, predictor_cols, y_col, e_col):
     return X, e, y
 
 def normalize_train(train_X):
+
     X_min = train_X.min(axis=0)
     X_max = train_X.max(axis=0)
-    normalized_train_x = (train_X-X_min) / (X_max-X_min)
+
+    if (X_min==X_max).all(): # For dummy data that have the same value for all the columns
+        X_max = X_max/2  # set as the half of the max values to avoid zero division.
+        X_min = X_max/2  # set as the half of the max values to avoid zero division.
+        normalized_train_x = (train_X-X_min) / (X_max-X_min)
+        # convert nan col (that have zeros only) to zero
+        normalized_train_x[np.isnan(normalized_train_x)] = 0
+
+    else:
+        normalized_train_x = (train_X-X_min) / (X_max-X_min)
+
     return normalized_train_x, X_min, X_max
 
+
+
 def normalize_test(test_X, X_min, X_max):
+
     normalized_test_x = (test_X-X_min) / (X_max-X_min)
+    normalized_test_x[np.isnan(normalized_test_x)] = 0
+
     return normalized_test_x
 
 
