@@ -31,11 +31,3 @@ jobs:
         COMMIT_HASH=${{ github.sha }}
         IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:${COMMIT_HASH}"
         docker push "${IMAGE_NAME}"
-
-
-
-        11371  docker build . -t ghcr.io/mydigitwinnl/federated_cvdm_training_poc
-11372  docker ls
-11373  docker ps
-11374  docker images
-11375  docker push ghcr.io/mydigitwinnl/federated_cvdm_training_poc:latest
