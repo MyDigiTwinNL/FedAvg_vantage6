@@ -57,7 +57,7 @@ def partial_risk_prediction(
     # print ("client_id", client_id)
 
     # Missing predictor data imputation by means of multiple imputation by chained equations
-    imputer = IterativeImputer(random_state=0, max_iter=5)
+    imputer = IterativeImputer(random_state=0, max_iter=5, keep_empty_features=True) # keep empty features to eschew errors during the development (if the array include dummy columns)
     lenfol_col = df1['LENFOL']
     fstat_col = df1['FSTAT']
     df_for_imputation = df1.drop(columns=['LENFOL', 'FSTAT']) # exclude outcome columns (labels)

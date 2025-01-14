@@ -17,10 +17,17 @@ sys.path.append('../')
 
 from vantage6.algorithm.tools.mock_client import MockAlgorithmClient
 from pathlib import Path
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+print (sys.path)
+
 import pandas as pd
 from dummy.utils import read_config
 import argparse
 # get path of current directory
+
+
+
 current_path = Path(__file__).parent
 current_dir = os.path.dirname(os.path.abspath(__file__))
 config_ini_filepath = os.path.join(current_dir, "lifelines_ci.ini")
@@ -30,12 +37,15 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-n_fold', default= 10, help='k of k-fold for ci', type=int)
     parser.add_argument('--fold_index', help="fold index out of k", type=int, required = True)
+    parser.add_argument("--output_pth", default= "aggregated_weights.pth", type=str, help="Path to output pth datafile which contains the aggregated wegiths after the full iterations of FL")
+
     # return parser.parse_args()
 
     args = parser.parse_args()
     # print("Arguments:",args)
     n_fold = args.n_fold
     fold_index = args.fold_index
+    output_pth = args.output_pth
 
     ## Mock client
     ## Horizontal splitted data, n=3 (50%, 30%, 20%)
@@ -43,19 +53,19 @@ def main():
         datasets=[
             # Data for first organization
             [{
-                "database": current_path / "lifelines_fhir_0.csv",
+                "database": str(current_path/"dummy_test_data"/"fhir.dummydata.10k.v2.preprocessed.csv.0.csv"),
                 "db_type": "csv",
                 "input_data": {}
             }],
             # Data for second organization
             [{
-                "database": current_path / "lifelines_fhir_1.csv",
+                "database": str(current_path/"dummy_test_data"/"fhir.dummydata.10k.v2.preprocessed.csv.1.csv"),
                 "db_type": "csv",
                 "input_data": {}
             }],
             # Data for third organization
             [{
-                "database": current_path / "lifelines_fhir_2.csv",
+                "database": str(current_path/"dummy_test_data"/"fhir.dummydata.10k.v2.preprocessed.csv.2.csv"),
                 "db_type": "csv",
                 "input_data": {}
             }],
@@ -63,10 +73,13 @@ def main():
         module="dummy"
     )
 
+
+
+
     ## get column name
     ## Description regarding benchmark, https://web.archive.org/web/20170515104524/http://www.umass.edu/statdata/statdata/data/whasncc2.txt
-    df_template = pd.read_csv('lifelines_fhir_0.csv')
-    list_of_column_names = list(df_template.columns)
+    ##df_template = pd.read_csv(str(current_path/"dummy_test_data"/"fhir.dummydata.10k.preprocessed.csv.0.csv"))
+    ##list_of_column_names = list(df_template.columns)
     # print ("list_of_column_names", list_of_column_names)
 
     predictor_cols = ['GENDER', 'T2D_STATUS', 'SMOKING_STATUS', 'SMOKING_QUANTITY',  
@@ -75,8 +88,8 @@ def main():
 'HEMOGLOBIN_VALUE', 'HYPERTENSION_STATUS', 'CREATININE_VALUE', 'HBA1C_VALUE', 'AGE']
     outcome_cols = ['LENFOL', 'FSTAT']
 
-    # num_update_iter = 21
     num_update_iter = 21
+    # num_update_iter = 4
 
     # list mock organizations
     organizations = client.organization.list()
@@ -96,7 +109,8 @@ def main():
                 "dl_config": dl_config,
                 "num_update_iter": num_update_iter,
                 "n_fold": n_fold,
-                "fold_index": fold_index
+                "fold_index": fold_index,
+                "agg_weight_filename": output_pth
             }
         },
         # organizations=[org_ids[0]],

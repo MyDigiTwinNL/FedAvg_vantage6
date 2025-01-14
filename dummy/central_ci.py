@@ -26,7 +26,7 @@ np.random.seed(0)
 
 @algorithm_client
 def central_ci(
-    client: AlgorithmClient, predictor_cols, outcome_cols, dl_config, num_update_iter, n_fold, fold_index
+    client: AlgorithmClient, predictor_cols, outcome_cols, dl_config, num_update_iter, n_fold, fold_index, agg_weight_filename
 ) -> Any:
     '''
     AlgorithmClient:
@@ -36,6 +36,7 @@ def central_ci(
     num_update_iter: the number of aggregation iterations (set to 20 in our PoC)
     n_fold: the number of folds in the data splitting in each client for train/valid/test(set to 10 in our PoC)
     (optional) fold_index: the index of the fold that will be used for test (it is for the corrected resampled t-test in the performance evaluation)
+    agg_weight_filename: Path to output pth datafile which contains the aggregated wegiths after the full iterations of FL
 
     '''
 
@@ -145,6 +146,11 @@ def central_ci(
 
         plot_global_results(global_ci_list, figure_result_dir, "C-statistic")
         plot_local_results(local_ci_list, figure_result_dir, "C-statistic")
+
+
+
+    # Save the aggregated weights of the network after the max update iterations of FL
+    torch.save(avged_params, agg_weight_filename)
 
     # Create a folder for saving results for the corrected resampled t-test
     ttest_dir = os.path.join(current_dir, "ttest_ci")
