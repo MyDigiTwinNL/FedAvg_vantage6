@@ -24,7 +24,7 @@ jobs:
       run: |
         COMMIT_HASH=${{ github.sha }}
         IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:${COMMIT_HASH}"
-        docker build . --tag "${IMAGE_NAME}" .
+        docker build -t "${IMAGE_NAME}" .
 
     - name: Push Docker image
       run: |
