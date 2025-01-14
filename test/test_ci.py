@@ -19,7 +19,7 @@ sys.path.append('../')
 from vantage6.algorithm.tools.mock_client import MockAlgorithmClient
 from pathlib import Path
 import pandas as pd
-from dummy.utils import read_config
+from federated_cvdm_training_poc.utils import read_config
 
 # get path of current directory
 current_path = Path(__file__).parent
@@ -51,7 +51,7 @@ def main():
                 "input_data": {}
             }],
         ],
-        module="dummy"
+        module="federated_cvdm_training_poc"
     )
 
     ## get column name
