@@ -14,7 +14,7 @@ jobs:
       uses: actions/checkout@main
 
     - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
+      uses: docker/login-action@v1
       with:
         registry: ghcr.io
         username: ${{github.actor}}
@@ -23,11 +23,19 @@ jobs:
     - name: Run Makefile Rule
       run: |
         COMMIT_HASH=${{ github.sha }}
-        IMAGE_NAME="federated_cvdm_training_poc:${COMMIT_HASH}"
-        docker build -t "${IMAGE_NAME}" .
+        IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:${COMMIT_HASH}"
+        docker build . --tag "${IMAGE_NAME}" .
 
     - name: Push Docker image
       run: |
         COMMIT_HASH=${{ github.sha }}
-        IMAGE_NAME="federated_cvdm_training_poc:${COMMIT_HASH}"
+        IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:${COMMIT_HASH}"
         docker push "${IMAGE_NAME}"
+
+
+
+        11371  docker build . -t ghcr.io/mydigitwinnl/federated_cvdm_training_poc
+11372  docker ls
+11373  docker ps
+11374  docker images
+11375  docker push ghcr.io/mydigitwinnl/federated_cvdm_training_poc:latest
