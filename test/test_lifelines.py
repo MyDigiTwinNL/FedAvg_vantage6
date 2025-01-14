@@ -53,19 +53,19 @@ def main():
         datasets=[
             # Data for first organization
             [{
-                "database": str(current_path/"dummy_test_data"/"fhir.dummydata.10k.preprocessed.csv.0.csv"),
+                "database": str(current_path/"dummy_test_data"/"fhir.dummydata.10k.v2.preprocessed.csv.0.csv"),
                 "db_type": "csv",
                 "input_data": {}
             }],
             # Data for second organization
             [{
-                "database": str(current_path/"dummy_test_data"/"fhir.dummydata.10k.preprocessed.csv.1.csv"),
+                "database": str(current_path/"dummy_test_data"/"fhir.dummydata.10k.v2.preprocessed.csv.1.csv"),
                 "db_type": "csv",
                 "input_data": {}
             }],
             # Data for third organization
             [{
-                "database": str(current_path/"dummy_test_data"/"fhir.dummydata.10k.preprocessed.csv.2.csv"),
+                "database": str(current_path/"dummy_test_data"/"fhir.dummydata.10k.v2.preprocessed.csv.2.csv"),
                 "db_type": "csv",
                 "input_data": {}
             }],

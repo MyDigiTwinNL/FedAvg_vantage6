@@ -92,14 +92,14 @@ def csv_preprocess(input_csv_path:str,output_csv_path:str):
     'HEMOGLOBIN_VALUE', 'HYPERTENSION_STATUS', 'HBA1C_VALUE', 'CREATININE_VALUE', 'AGE']
 
     outcome_cols = ['LENFOL', 'FSTAT']
-    #print ("len(patient_df)", len(patient_df))
+    print ("len(patient_df)", len(patient_df))
     patient_df = patient_df[predictor_cols+outcome_cols]
     patient_df.to_csv(output_csv_path , index=False)
 
 
 def main():
 
-    parser = argparse.ArgumentParser(description="SQLite query to CSV")
+    parser = argparse.ArgumentParser(description="CSV data pre-processing")
     
     parser.add_argument("input_csv", type=str, help="Path to input CVS datafile")
     parser.add_argument("output_csv", type=str, help="Path to output (preprocessed) CSV file")
