@@ -43,8 +43,15 @@ def central_ci(
     """ Central part of the algorithm """
     # central function.
     # get all organizations (ids) within the collaboration so you can send a task to them.
+    
     organizations = client.organization.list()
     org_ids = [organization.get("id") for organization in organizations]
+
+    # The central function is expected to be executed from an 'aggregator' node with
+    # no data. Hence, it is excluded (client.organization_id) from the list of organizations 
+    # that will perform the partial model traning with their local datasets.
+    print(client.organization.list())
+    org_ids.remove(client.organization_id)
 
     global_ci_list = [] # List of C-statistic for performance evaluation
     local_ci_list = [] # List of C-statistic for performance evaluation
@@ -174,6 +181,8 @@ def central_ci(
                        "iterations":i,
                        "runtime":end_time - start_time,
                        "predictor_cols":predictor_cols,
-                       "outcome_cols":outcome_cols
+                       "outcome_cols":outcome_cols,
+                       "data_nodes":org_ids,
+                       "aggregator":client.organization_id
                        })
 

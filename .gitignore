@@ -130,3 +130,7 @@ venv.bak/
 .mypy_cache/
 
 .vscode/
+
+# model training performance statistics
+federated_cvdm_training_poc/figure_ci_results_*
+federated_cvdm_training_poc/ttest_ci/

@@ -69,6 +69,15 @@ def main():
                 "db_type": "csv",
                 "input_data": {}
             }],
+            # Fourth organization (the aggregator) which shouldn't be used for the partial trainings - hence, 
+            # an empty database is configured for it.
+            [{
+                "database": str(current_path/"dummy_test_data"/"empty.dataset.csv"),
+                "db_type": "csv",
+                "input_data": {}
+            }],
+
+
         ],
         module="federated_cvdm_training_poc"
     )
@@ -113,14 +122,12 @@ def main():
                 "agg_weight_filename": output_pth
             }
         },
-        # organizations=[org_ids[0]],
-        organizations=[1],
+        #The last organization (the aggregator)
+        organizations=[3],
     )
 
     results = client.wait_for_results(central_task.get("id"))
     print(results)
-
-
 
 
 
