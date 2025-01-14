@@ -23,11 +23,11 @@ jobs:
     - name: Run Makefile Rule
       run: |
         COMMIT_HASH=${{ github.sha }}
-        IMAGE_NAME="${{ github.repository }}:${COMMIT_HASH}"
+        IMAGE_NAME="federated_cvdm_training_poc:${COMMIT_HASH}"
         docker build -t "${IMAGE_NAME}" .
 
     - name: Push Docker image
       run: |
         COMMIT_HASH=${{ github.sha }}
-        IMAGE_NAME="${{ github.repository }}:${COMMIT_HASH}"
+        IMAGE_NAME="federated_cvdm_training_poc:${COMMIT_HASH}"
         docker push "${IMAGE_NAME}"
