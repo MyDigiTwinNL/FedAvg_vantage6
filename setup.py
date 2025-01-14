@@ -11,7 +11,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 # Here you specify the meta-data of your package. The `name` argument is
 # needed in some other steps.
 setup(
-    name='dummy',
+    name='federated_cvdm_training_poc',
     version="1.0.0",
     description='test',
     long_description=long_description,

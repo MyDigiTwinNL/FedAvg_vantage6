@@ -46,9 +46,9 @@ first, especially the part about the
   my_task = client.task.create(
       collaboration=1,
       organizations=[1],
-      name='dummy',
+      name='federated_cvdm_training_poc',
       description='test',
-      image='dummy',
+      image='federated_cvdm_training_poc',
       input=input_,
       data_format='json'
   )

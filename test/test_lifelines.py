@@ -22,7 +22,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 print (sys.path)
 
 import pandas as pd
-from dummy.utils import read_config
+from federated_cvdm_training_poc.utils import read_config
 import argparse
 # get path of current directory
 
@@ -70,7 +70,7 @@ def main():
                 "input_data": {}
             }],
         ],
-        module="dummy"
+        module="federated_cvdm_training_poc"
     )
 
 

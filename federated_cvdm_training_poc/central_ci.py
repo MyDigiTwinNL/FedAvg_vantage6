@@ -49,6 +49,8 @@ def central_ci(
     global_ci_list = [] # List of C-statistic for performance evaluation
     local_ci_list = [] # List of C-statistic for performance evaluation
 
+    start_time = time.time()
+
     ## Iterations of broadcasting weights/local weight updating/sending back/aggregation
     for i in range(num_update_iter):
         '''
@@ -150,7 +152,10 @@ def central_ci(
 
 
     # Save the aggregated weights of the network after the max update iterations of FL
+    info(f"Saving torch model on {agg_weight_filename}...")    
     torch.save(avged_params, agg_weight_filename)
+
+    info(f"{i} iterations completed.")    
 
     # Create a folder for saving results for the corrected resampled t-test
     ttest_dir = os.path.join(current_dir, "ttest_ci")
@@ -158,8 +163,17 @@ def central_ci(
         os.makedirs(ttest_dir)
 
     # Save C-statistic results for for the corrected resampled t-test
+    info(f"Saving C-statistics on {ttest_dir} folder...")    
+
     np.save(os.path.join(ttest_dir, "global_ci_%s.npy" %fold_index ), np.array(global_ci_list))
     np.save(os.path.join(ttest_dir, "local_ci_%s.npy" %fold_index), np.array(local_ci_list))
 
-    return i
+    end_time = time.time()
+
+    return json.dumps({"model_output_path":agg_weight_filename,
+                       "iterations":i,
+                       "runtime":end_time - start_time,
+                       "predictor_cols":predictor_cols,
+                       "outcome_cols":outcome_cols
+                       })
 
