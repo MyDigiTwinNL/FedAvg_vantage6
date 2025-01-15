@@ -76,6 +76,7 @@ def partial_risk_prediction(
     ## Split the data into 80%/10%/10% for training/validation/test
     train_df, val_df, test_df = ci_split(df_imputed, n_fold = n_fold, fold_index = fold_index)
 
+    info("Vertical data split")
     ## Vertical data split: X (feature), e (FSTAT), y(LENFOL)
     y_col = [outcome_cols[0]]
     e_col = [outcome_cols[1]]
@@ -83,6 +84,7 @@ def partial_risk_prediction(
     val_X, val_e, val_y = vertical_split(val_df, predictor_cols, y_col, e_col)
     test_X, test_e, test_y = vertical_split(test_df, predictor_cols, y_col, e_col)
 
+    info("Min-max normalization")
     ## Min-max normalization independently on each node
     train_X, X_min, X_max = normalize_train(train_X) # Normalize X
     val_X = normalize_test(val_X, X_min, X_max) # Nomralize val/test X based on min/max of train X
@@ -104,7 +106,7 @@ def partial_risk_prediction(
 
 
     batchsize = 4096
-
+    
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=batchsize)
     val_loader = torch.utils.data.DataLoader(
@@ -112,6 +114,8 @@ def partial_risk_prediction(
     test_loader = torch.utils.data.DataLoader(
         test_dataset, batch_size=test_dataset.__len__())
 
+
+    info("Create a neural network based on the configuration specified in the ini file")
     ## Create a neural network based on the configuration specified in the ini file
     model = DeepSurv(dl_config['network']).to(device)
 
