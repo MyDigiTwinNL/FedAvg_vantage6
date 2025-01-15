@@ -51,8 +51,7 @@ model_training_task = client.task.create(
    collaboration=2,
    # Must be set to the 'aggregator' organization
    organizations=[4],
-   name="federated_model_training_poc",
-   #image="hcadavidescience/federated_cvdm_training_poc",      
+   name="federated_model_training_poc",   
    image="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:c10d8d35725c940101fd7b4d949c5e86e32701bb",
    description='',
    input_= {
