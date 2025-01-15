@@ -52,7 +52,10 @@ def partial_risk_prediction(
 
     """ Decentral part of the algorithm """
 
-    client_id = client.node.get()["id"]
+    
+
+    # client_id = client.node.get()["id"]
+    client_id = client.organization_id
     # print ("update_iter", update_iter)
     # print ("client_id", client_id)
 
