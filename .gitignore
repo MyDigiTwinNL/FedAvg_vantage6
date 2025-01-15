@@ -133,4 +133,5 @@ venv.bak/
 
 # model training performance statistics
 federated_cvdm_training_poc/figure_ci_results_*
-federated_cvdm_training_poc/ttest_ci/
+federated_cvdm_training_poc/ttest_ci/sample_client/config.py
+federated_cvdm_training_poc/ttest_ci
