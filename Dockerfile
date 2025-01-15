@@ -1,5 +1,5 @@
 # basic python3 image as base
-FROM --platform=linux/amd64  harbor2.vantage6.ai/infrastructure/algorithm-base
+FROM harbor2.vantage6.ai/infrastructure/algorithm-base
 
 # This is a placeholder that should be overloaded by invoking
 # docker build with '--build-arg PKG_NAME=...'
