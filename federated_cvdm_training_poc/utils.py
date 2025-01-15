@@ -11,6 +11,7 @@ import torch
 import configparser
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, StratifiedKFold
+from vantage6.algorithm.tools.util import info, warn, error
 
 from lifelines.utils import concordance_index
 
@@ -167,12 +168,13 @@ def ci_split(df_input, stratify_colname='FSTAT', n_fold = 10,
     '''
     StratifiedKFold for confidence interval
     '''
+    info("ci_split step 1- StratifiedKFold")
     skf = StratifiedKFold(n_splits=n_fold)
 
     X = df_input # Contains all columns.
     y = df_input[[stratify_colname]] # Dataframe of just the column on which to stratify.
-
-
+    
+    info("ci_split step 2")
     for i, (train_index, test_index) in enumerate(skf.split(X, y)):
         # print(f"Fold {i}:")
         # print(f"  Train: index={train_index}")
@@ -183,13 +185,13 @@ def ci_split(df_input, stratify_colname='FSTAT', n_fold = 10,
             selected_k_train_index = train_index
             selected_k_test_index = test_index
 
-
+    info("ci_split step 3")
     df_train = X.loc[selected_k_train_index]
     df_test = X.loc[selected_k_test_index]
     y_train = y.loc[selected_k_train_index]
     y_test = y.loc[selected_k_test_index]
 
-
+    info("ci_split step 4")
     # Split original dataframe into train and temp dataframes.
     relative_frac_test = len(y_test)/len(y_train)
     df_train, df_val, y_train, y_val = train_test_split(df_train,
