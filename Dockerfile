@@ -3,7 +3,7 @@ FROM harbor2.vantage6.ai/infrastructure/algorithm-base
 
 # This is a placeholder that should be overloaded by invoking
 # docker build with '--build-arg PKG_NAME=...'
-ARG PKG_NAME="mdt_poc_cvdp_model_training"
+ARG PKG_NAME="federated_cvdm_training_poc"
 
 # install federated algorithm
 COPY . /app
