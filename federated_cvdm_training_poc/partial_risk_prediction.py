@@ -76,7 +76,7 @@ def partial_risk_prediction(
     ## Split the data into 80%/10%/10% for training/validation/test
     train_df, val_df, test_df = ci_split(df_imputed, n_fold = n_fold, fold_index = fold_index)
 
-    info("Vertical data split")
+    #info("Vertical data split")
     ## Vertical data split: X (feature), e (FSTAT), y(LENFOL)
     y_col = [outcome_cols[0]]
     e_col = [outcome_cols[1]]
@@ -84,7 +84,7 @@ def partial_risk_prediction(
     val_X, val_e, val_y = vertical_split(val_df, predictor_cols, y_col, e_col)
     test_X, test_e, test_y = vertical_split(test_df, predictor_cols, y_col, e_col)
 
-    info("Min-max normalization")
+    #info("Min-max normalization")
     ## Min-max normalization independently on each node
     train_X, X_min, X_max = normalize_train(train_X) # Normalize X
     val_X = normalize_test(val_X, X_min, X_max) # Nomralize val/test X based on min/max of train X
@@ -115,7 +115,7 @@ def partial_risk_prediction(
         test_dataset, batch_size=test_dataset.__len__())
 
 
-    info("Create a neural network based on the configuration specified in the ini file")
+    #info("Create a neural network based on the configuration specified in the ini file")
     ## Create a neural network based on the configuration specified in the ini file
     model = DeepSurv(dl_config['network']).to(device)
 
@@ -128,7 +128,7 @@ def partial_risk_prediction(
         model.load_state_dict(avged_params)
         learning_rate = dl_config['train']['learning_rate']/10
 
-    info("Objective function")
+    #info("Objective function")
     # Objective function
     criterion = NegativeLogLikelihood(dl_config['network'], device).to(device)
     # Optimizer for training
@@ -141,7 +141,7 @@ def partial_risk_prediction(
     train_ci_list = []
     val_ci_list = []
 
-    info("Training loop")
+    #info("Training loop")
     ## Training loop (the number of training epochs are also specified in the configuration file)
     for epoch in range(1, dl_config['train']['epochs']+1):
         # train step
@@ -157,14 +157,16 @@ def partial_risk_prediction(
         model.train()
         for X, y, e in train_loader:
 
+            info(f"Epoch {epoch} - step 1 ")
             X = X.to(device)
             y = y.to(device)
             e = e.to(device)
-            
+            info(f"Epoch {epoch} - step 2 ")
             risk_pred = model(X)
             risk_pred = risk_pred.to(device)
-
+            info(f"Epoch {epoch} - step 3 ")
             train_loss = criterion(risk_pred, y, e, model)
+            info(f"Epoch {epoch} - step 4 ")
             total_train_loss = total_train_loss + train_loss.item()
             train_c = c_index(-risk_pred, y, e)
             total_train_c = total_train_c + train_c
@@ -172,9 +174,13 @@ def partial_risk_prediction(
             total_train_step += 1.0
             # print ("train_c", train_c)
             # updates parameters
+            info(f"Epoch {epoch} - step 5 ")
             optimizer.zero_grad()
+            info(f"Epoch {epoch} - step 6 ")
             train_loss.backward()
+            info(f"Epoch {epoch} - step 7 ")
             optimizer.step()
+            info(f"Epoch {epoch} - step 8 ")
 
         train_loss_list.append(total_train_loss/total_train_step)
         train_ci_list.append(total_train_c/total_train_step)
