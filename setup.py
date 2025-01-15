@@ -23,6 +23,13 @@ setup(
     python_requires='>=3.10',
     install_requires=[
         'vantage6-algorithm-tools',
-        'pandas'
+        'pandas==2.2.3',
+        'xlrd==2.0.1',
+        'scikit-learn==1.6.1',
+        'scipy==1.13.1',
+        'torch==2.5.1',
+        'configparser==7.1.0',
+        'lifelines==0.30.0',
+        'h5py==3.12.1'
     ]
 )
