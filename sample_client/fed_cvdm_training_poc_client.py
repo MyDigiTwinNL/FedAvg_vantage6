@@ -43,7 +43,7 @@ num_update_iter = 21
 dl_config = read_config("lifelines_ci.ini")
 
 n_fold = 10
-fold_index = 2
+fold_index = 4
 output_pth = "aggregated_weights.pth"
 
 
@@ -52,8 +52,8 @@ model_training_task = client.task.create(
    # Must be set to the 'aggregator' organization
    organizations=[4],
    name="federated_model_training_poc",
-   #image="hcadavidescience/federated_cvdm_training_poc",
-   image="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:000e89ad8f08631a0dd72ef234414e4cf92c8d67",
+   #image="hcadavidescience/federated_cvdm_training_poc",      
+   image="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:c10d8d35725c940101fd7b4d949c5e86e32701bb",
    description='',
    input_= {
       "method":"central_ci",
