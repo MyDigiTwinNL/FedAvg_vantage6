@@ -128,6 +128,7 @@ def partial_risk_prediction(
         model.load_state_dict(avged_params)
         learning_rate = dl_config['train']['learning_rate']/10
 
+    info("Objective function")
     # Objective function
     criterion = NegativeLogLikelihood(dl_config['network'], device).to(device)
     # Optimizer for training
@@ -140,6 +141,7 @@ def partial_risk_prediction(
     train_ci_list = []
     val_ci_list = []
 
+    info("Training loop")
     ## Training loop (the number of training epochs are also specified in the configuration file)
     for epoch in range(1, dl_config['train']['epochs']+1):
         # train step
@@ -151,6 +153,7 @@ def partial_risk_prediction(
         train_total_tp = 0
         val_total_tp = 0
 
+        info(f"Epoch {epoch} ")
         model.train()
         for X, y, e in train_loader:
 
@@ -176,6 +179,7 @@ def partial_risk_prediction(
         train_loss_list.append(total_train_loss/total_train_step)
         train_ci_list.append(total_train_c/total_train_step)
 
+        info("Validation step")
         # validation step
         model.eval()
         with torch.no_grad():
