@@ -8,6 +8,7 @@ encryption if that is enabled).
 import os,sys
 import json
 import torch
+import torch.onnx
 import random
 import numpy as np
 from typing import Any
@@ -16,6 +17,7 @@ from sklearn.metrics import confusion_matrix
 from vantage6.algorithm.tools.util import info, warn, error
 from vantage6.algorithm.tools.decorators import algorithm_client
 from vantage6.algorithm.client import AlgorithmClient
+from .networks import DeepSurv
 
 ## Set random seed for reproducibility and the same initialization
 torch.manual_seed(0)
@@ -160,7 +162,40 @@ def central_ci(
 
     # Save the aggregated weights of the network after the max update iterations of FL
     info(f"Saving torch model on {agg_weight_filename}...")    
-    torch.save(avged_params, agg_weight_filename)
+    #torch.save(avged_params, agg_weight_filename)
+
+    ###########    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = DeepSurv(dl_config['network']).to(device)
+    
+    # Load the saved weights into the model
+    model.load_state_dict(avged_params)
+    
+
+    #Random input tensor *for recording the trace of the operators*
+    batch_size = 1
+    #random_input = torch.randn(batch_size, 16, requires_grad=True)
+    random_input = torch.randn(2, 16).double()
+
+    # Set the model to evaluation mode
+    model.eval()
+
+    torch.onnx.export(model,               # model being run
+                    random_input,                         # model input (or a tuple for multiple inputs)
+                    "onnx_test_model.onnx",   # where to save the model (can be a file or file-like object)
+                    export_params=True,        # store the trained parameter weights inside the model file
+                    opset_version=10,          # the ONNX version to export the model to
+                    do_constant_folding=True,  # whether to execute constant folding for optimization
+                    input_names = ['p1','p2','p3','p4'],   # the model's input names
+                    output_names = ['output'], # the model's output names
+                    #dynamic_axes={'input' : {0 : 'batch_size'},    # variable length axes
+                    #                'output' : {0 : 'batch_size'}}
+    )
+
+
+
+    ###########
+
 
     info(f"{i} iterations completed.")    
 
