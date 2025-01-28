@@ -28,7 +28,7 @@ client = Client(config.server_url, config.server_port, config.server_api,
 client.authenticate(config.username, config.password)
 
 # Optional: setup the encryption, if you have an organization_key
-client.setup_encryption(None)
+client.setup_encryption(config.organization_key)
 
 
 predictor_cols = ['GENDER', 'T2D_STATUS', 'SMOKING_STATUS', 'SMOKING_QUANTITY',  
@@ -50,7 +50,7 @@ output_pth = "aggregated_weights.pth"
 model_training_task = client.task.create(
    collaboration=2,
    # Must be set to the 'aggregator' organization
-   organizations=[4],
+   organizations=[7],
    name="federated_model_training_poc",   
    image="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:c10d8d35725c940101fd7b4d949c5e86e32701bb",
    description='',
@@ -67,7 +67,7 @@ model_training_task = client.task.create(
       }
    },
    databases=[
-         {'label': 'lifelinesp'}
+         {'label': 'lifelines_dummy'}
    ]
 )
 
