@@ -4,6 +4,9 @@ from vantage6.client import UserClient as Client
 # If it is not, then you need to make sure it can be found on your PYTHONPATH
 import config
 import configparser
+import json
+
+from federated_cvdm_training_poc.output_encoders import decode_files
 
 
 def read_config(ini_file):
@@ -73,8 +76,16 @@ model_training_task = client.task.create(
 
 task_id = model_training_task['id']
 print('Waiting for results...')
-result = client.wait_for_results(task_id)
+result = json.loads(client.wait_for_results(task_id)[0])
+
 print('Results received!')
-print(result)
+
+saved_files = decode_files(result["encoded_output_files"],'/tmp')
+
+print("Decoding and saving output files:")
+print(saved_files)
+
+
+
 
 
