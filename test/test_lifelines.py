@@ -12,6 +12,7 @@ installed. This can be done by running:
     pip install vantage6-algorithm-tools
 """
 import os,sys
+import json
 
 sys.path.append('../')
 
@@ -26,7 +27,7 @@ from federated_cvdm_training_poc.utils import read_config
 import argparse
 # get path of current directory
 
-
+from federated_cvdm_training_poc.output_encoders import decode_files
 
 current_path = Path(__file__).parent
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -126,10 +127,16 @@ def main():
         organizations=[3],
     )
 
-    results = client.wait_for_results(central_task.get("id"))
-    print(results)
+    print('Waiting for results...')
+    result = json.loads(client.wait_for_results(central_task.get("id"))[0])
+    
+    print('Results received!')
+    
+    #print(type(result))
+    saved_files = decode_files(result["encoded_output_files"],'/tmp')
 
-
+    print("Decoding and saving output files:")
+    print(saved_files)
 
 if __name__ == '__main__':
     main()    
