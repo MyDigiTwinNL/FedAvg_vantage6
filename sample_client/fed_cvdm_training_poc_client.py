@@ -6,7 +6,7 @@ import config
 import configparser
 import json
 
-from federated_cvdm_training_poc.output_encoders import decode_files
+from output_encoders import decode_files
 
 
 def read_config(ini_file):
@@ -51,11 +51,12 @@ output_pth = "aggregated_weights.pth"
 
 
 model_training_task = client.task.create(
-   collaboration=2,
+   collaboration=3,
    # Must be set to the 'aggregator' organization
-   organizations=[7],
+   organizations=[6],
    name="federated_model_training_poc",   
-   image="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:c10d8d35725c940101fd7b4d949c5e86e32701bb",
+   image="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:develop",
+   #image="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:c10d8d35725c940101fd7b4d949c5e86e32701bb",
    description='',
    input_= {
       "method":"central_ci",
@@ -70,21 +71,34 @@ model_training_task = client.task.create(
       }
    },
    databases=[
-         {'label': 'lifelines_dummy'}
+         #{'label': 'lifelines_dummy'}
+         {'label': 'lifelinesp'}
    ]
 )
 
 task_id = model_training_task['id']
 print('Waiting for results...')
-result = json.loads(client.wait_for_results(task_id)[0])
 
+alg_output = client.wait_for_results(task_id)
 print('Results received!')
 
-saved_files = decode_files(result["encoded_output_files"],'/tmp')
+alg_result = json.loads(alg_output['data'][0]['result'])
+
+#parse the result as a json object
+alg_result_dict = json.loads(alg_result)
+
+#save the files on /tmp (update this output path as needed)
+saved_files = decode_files(alg_result_dict["encoded_output_files"],'/tmp')
 
 print("Decoding and saving output files:")
 print(saved_files)
 
+print(f"Iterations: {alg_result_dict['iterations']}")
+print(f"Runtime: {alg_result_dict['runtime']} sec.")
+print(f"Predictor cols: {alg_result_dict['predictor_cols']}")
+print(f"Outcome cols: {alg_result_dict['outcome_cols']}")
+print(f"Data nodes: {alg_result_dict['data_nodes']}")
+print(f"Aggregator node: {alg_result_dict['aggregator']}")
 
 
 
