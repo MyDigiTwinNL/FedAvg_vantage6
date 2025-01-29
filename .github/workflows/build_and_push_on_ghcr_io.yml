@@ -21,19 +21,28 @@ jobs:
         username: ${{github.actor}}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Set Image Name
+    - name: Run Makefile Rule
       run: |
         COMMIT_HASH=${{ github.sha }}
-        if [ "$GITHUB_REF_NAME" = "develop" ]; then
-          IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc_testing:latest"
+        BRANCH_NAME=${{ github.ref_name }}
+
+        if [ "$BRANCH_NAME" = "develop" ]; then
+          IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:develop"
+        else
+          IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:${COMMIT_HASH}"
+        fi
+      
+        docker build -t "${IMAGE_NAME}" .
+
+    - name: Push Docker image
+      run: |
+        COMMIT_HASH=${{ github.sha }}
+        BRANCH_NAME=${{ github.ref_name }}
+
+        if [ "$BRANCH_NAME" = "develop" ]; then
+          IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:develop"
         else
           IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:${COMMIT_HASH}"
         fi
 
-    - name: Run Makefile Rule
-      run: |
-        ${IMAGE_NAME}
-
-    - name: Push Docker image
-      run: |
-        ${IMAGE_NAME}
+        docker push "${IMAGE_NAME}"

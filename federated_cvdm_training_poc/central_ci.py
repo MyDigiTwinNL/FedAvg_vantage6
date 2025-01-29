@@ -12,6 +12,7 @@ import random
 import numpy as np
 from typing import Any
 from .utils import *
+from .output_encoders import encode_files
 from sklearn.metrics import confusion_matrix
 from vantage6.algorithm.tools.util import info, warn, error
 from vantage6.algorithm.tools.decorators import algorithm_client
@@ -177,7 +178,17 @@ def central_ci(
 
     end_time = time.time()
 
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    figure_result_dir = os.path.join(current_dir, "figure_ci_results_%s" %fold_index)
+    ttest_ci_dir = os.path.join(current_dir, "ttest_ci")
+
+    encoded_files = encode_files([agg_weight_filename,
+                                  f"{figure_result_dir}/global_eval_C-statistic_lifelines.png",
+                                  f"{ttest_ci_dir}/global_ci_{fold_index}.npy",
+                                  f"{ttest_ci_dir}/local_ci_{fold_index}.npy"])
+    
     return json.dumps({"model_output_path":agg_weight_filename,
+                       "encoded_output_files":encoded_files,
                        "iterations":i,
                        "runtime":end_time - start_time,
                        "predictor_cols":predictor_cols,
