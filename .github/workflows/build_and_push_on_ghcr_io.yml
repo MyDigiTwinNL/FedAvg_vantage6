@@ -24,11 +24,25 @@ jobs:
     - name: Run Makefile Rule
       run: |
         COMMIT_HASH=${{ github.sha }}
-        IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:${COMMIT_HASH}"
+        BRANCH_NAME=${{ github.ref_name }}
+
+        if [ "$BRANCH_NAME" = "develop" ]; then
+          IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:develop"
+        else
+          IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:${COMMIT_HASH}"
+        fi
+      
         docker build -t "${IMAGE_NAME}" .
 
     - name: Push Docker image
       run: |
         COMMIT_HASH=${{ github.sha }}
-        IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:${COMMIT_HASH}"
+        BRANCH_NAME=${{ github.ref_name }}
+
+        if [ "$BRANCH_NAME" = "develop" ]; then
+          IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:develop"
+        else
+          IMAGE_NAME="ghcr.io/mydigitwinnl/federated_cvdm_training_poc:${COMMIT_HASH}"
+        fi
+
         docker push "${IMAGE_NAME}"
