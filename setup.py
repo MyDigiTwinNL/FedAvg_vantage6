@@ -31,5 +31,6 @@ setup(
         'configparser==7.1.0',
         'lifelines==0.30.0',
         'h5py==3.12.1'
+        'onnx==1.19.0'
     ]
 )

@@ -7,3 +7,4 @@ torch
 configparser
 lifelines
 h5py
+onnx==1.19.0

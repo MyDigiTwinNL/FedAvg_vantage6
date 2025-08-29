@@ -8,11 +8,14 @@ encryption if that is enabled).
 import os,sys
 import json
 import torch
+import torch.onnx
+import torch.nn
 import random
 import numpy as np
-from typing import Any
+from typing import Any, List
 from .utils import *
 from .output_encoders import encode_files
+from .networks import DeepSurv
 from sklearn.metrics import confusion_matrix
 from vantage6.algorithm.tools.util import info, warn, error
 from vantage6.algorithm.tools.decorators import algorithm_client
@@ -73,6 +76,8 @@ def central_ci(
 
         # Define input parameters for a subtask
         info("Defining input parameters")
+        info(f"Predictors ({len(predictor_cols)}):{predictor_cols}")
+        info(f"Outputs ({len(outcome_cols)}):{outcome_cols}")
         input_ = {
             "method": "partial_risk_prediction",
             "kwargs": {
@@ -160,10 +165,31 @@ def central_ci(
 
 
     # Save the aggregated weights of the network after the max update iterations of FL
-    info(f"Saving torch model on {agg_weight_filename}...")    
+    info(f"Saving model weights on {agg_weight_filename}...: averaged weights ({type(avged_params)})")
+    
     torch.save(avged_params, agg_weight_filename)
 
-    info(f"{i} iterations completed.")    
+    info(f"{i} iterations completed.")   
+
+    info("Saving ONNX model+weights") 
+
+    # Reconstructing the model
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = DeepSurv(dl_config['network']).to(device)
+
+    print(f">>> Reconstructed model input size:{get_input_size(model=model)}")
+
+    
+    # Load the saved weights into the model
+    # model.load_state_dict(avged_params)
+
+    # Exporting it
+    export_onnx_model(
+        torch_model=model,
+        input_names=predictor_cols,
+        weights=avged_params,
+        target_onnx_file_path="/tmp/model_wg.onnx",
+    )
 
     # Create a folder for saving results for the corrected resampled t-test
     ttest_dir = os.path.join(current_dir, "ttest_ci")
@@ -197,3 +223,60 @@ def central_ci(
                        "aggregator":client.organization_id
                        })
 
+
+
+def get_input_size(model: torch.nn.Module) -> int:
+    """
+    Get the number of input features for a DeepSurv model.
+    Works whether or not the original config was saved.
+    """
+    # If the model still has its config
+    if hasattr(model, "dims") and model.dims:
+        return model.dims[0]
+
+    # Otherwise, infer from the first Linear layer
+    for layer in model.modules():
+        if isinstance(layer, torch.nn.Linear):
+            return layer.in_features
+
+    raise ValueError("Could not determine input size (no Linear layer found).")
+
+
+def export_onnx_model(torch_model:torch.nn.Module, input_names: List[str], weights:dict,target_onnx_file_path:str):
+    """
+    Exports a PyTorch model and its weights to an ONNX format.
+
+    Loads the provided weights into the given PyTorch model, generates a random input tensor for tracing,
+    and exports the model to the specified ONNX file path.
+
+    Args:
+        torch_model (torch.nn.Module): The PyTorch model to export.
+        input_names (List[str]): List of input tensor names for the ONNX model.
+        weights (dict): State dictionary containing the trained weights for the model.
+        target_onnx_file_path (str): File path where the ONNX model will be saved.
+
+    Returns:
+        None
+    """
+
+    torch_model.load_state_dict(weights)
+    torch_model.eval()
+
+    n_features = torch_model.dims[0]        # or use get_input_size(model)
+    dummy_input = torch.randn(2, n_features, dtype=torch.double)
+
+    #Random input tensor *for recording the trace of the operators*
+    #input_batch_size = 2
+    #random_input = torch.randn(input_batch_size, len(input_names)).double()
+
+    # Set the model to evaluation mode
+
+    torch.onnx.export(torch_model,               # model being run
+                    dummy_input,                         # model input (or a tuple for multiple inputs)
+                    target_onnx_file_path,   # where to save the model (can be a file or file-like object)
+                    export_params=True,        # store the trained parameter weights inside the model file
+                    opset_version=14,          # the ONNX version to export the model to
+                    do_constant_folding=True,  # whether to execute constant folding for optimization
+                    input_names = ['input'],   # the model's input names
+                    output_names = ['output'], # the model's output names
+    )    
