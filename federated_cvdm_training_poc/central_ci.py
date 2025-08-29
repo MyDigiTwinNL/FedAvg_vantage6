@@ -10,6 +10,7 @@ import json
 import torch
 import torch.onnx
 import torch.nn
+import onnx
 import random
 import numpy as np
 from typing import Any, List
@@ -191,6 +192,9 @@ def central_ci(
         target_onnx_file_path="/tmp/model_wg.onnx",
     )
 
+    # Checking onnx file
+    check_onnx_file("/tmp/model_wg.onnx")
+
     # Create a folder for saving results for the corrected resampled t-test
     ttest_dir = os.path.join(current_dir, "ttest_ci")
     if not os.path.exists(ttest_dir):
@@ -280,3 +284,16 @@ def export_onnx_model(torch_model:torch.nn.Module, input_names: List[str], weigh
                     input_names = ['input'],   # the model's input names
                     output_names = ['output'], # the model's output names
     )    
+
+
+def check_onnx_file(onnx_file_path:str):
+    onnx_model = onnx.load(onnx_file_path)
+    print("Inputs:")
+    for inp in onnx_model.graph.input:
+        dims = [d.dim_value if d.dim_value > 0 else "?" for d in inp.type.tensor_type.shape.dim]
+        print(f"  {inp.name}: shape {dims}")
+
+    print("Outputs:")
+    for out in onnx_model.graph.output:
+        dims = [d.dim_value if d.dim_value > 0 else "?" for d in out.type.tensor_type.shape.dim]
+        print(f"  {out.name}: shape {dims}")
