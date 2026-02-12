@@ -206,7 +206,7 @@ def central_ci(
 
 
             ## Save outputs of local models (risk_pred, y, e), at the last update
-            if i == num_update_iter-1
+            if i == num_update_iter-1:
                 # Flatten the nested lists
                 flat_pred_risk = [item[0] for item in test_cm['risk_pred']]
                 flat_y = [item[0] for item in test_cm['y']]
@@ -241,7 +241,7 @@ def central_ci(
         global_ci_list.append(glo_ci)
         local_ci_list.append(test_ci_list)
 
-        if i == num_update_iter-1
+        if i == num_update_iter-1:
             ## aggregated globale results
 
             flat_pred_risk_glo = [item[0] for item in risk_pred_stack]
