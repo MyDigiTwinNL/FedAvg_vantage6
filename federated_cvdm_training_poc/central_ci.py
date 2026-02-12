@@ -14,6 +14,7 @@ from typing import Any
 from .utils import *
 from .output_encoders import encode_files
 from sklearn.metrics import confusion_matrix
+import vantage6
 from vantage6.algorithm.tools.util import info, warn, error
 
 
@@ -30,7 +31,7 @@ import time
 from vantage6.algorithm.client import AlgorithmClient
 
 
-info(f"[central_ci] vantage6 version inside container: {vantage6.__version__}")
+
 
 
 ## Set random seed for reproducibility and the same initialization
@@ -60,6 +61,8 @@ def central_ci(
     # central function.
     # get all organizations (ids) within the collaboration so you can send a task to them.
     
+    info(f"[central_ci] vantage6 version inside container: {vantage6.__version__}")
+
     organizations = client.organization.list()
     org_ids = [organization.get("id") for organization in organizations]
 

@@ -9,7 +9,7 @@ or directly to the user (if they requested partial results).
 import pandas as pd
 from typing import Any
 
-
+import vantage6
 
 from vantage6.algorithm.tools.util import info, warn, error
 
@@ -25,7 +25,7 @@ except ModuleNotFoundError:
 
 from vantage6.algorithm.client import AlgorithmClient
 
-info(f"[partial_risk_prediction] vantage6 version inside container: {vantage6.__version__}")
+
 
 
 from .utils import *
@@ -66,13 +66,13 @@ def partial_risk_prediction(
 
     """ Decentral part of the algorithm """
 
-    
+    info(f"[partial_risk_prediction] vantage6 version inside container: {vantage6.__version__}")
 
     # client_id = client.node.get()["id"]
     client_id = client.organization_id
     # print ("update_iter", update_iter)
     # print ("client_id", client_id)
-
+    info(f"client_id {client_id} ")
     # Missing predictor data imputation by means of multiple imputation by chained equations
     imputer = IterativeImputer(random_state=0, max_iter=5, keep_empty_features=True) # keep empty features to eschew errors during the development (if the array include dummy columns)
     lenfol_col = df1['LENFOL']
