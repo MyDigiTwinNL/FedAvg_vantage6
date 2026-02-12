@@ -300,8 +300,8 @@ def central_ci(
                                   f"{figure_result_dir}/{global_plot_filename}",
                                   f"{figure_result_dir}/{local_plot_filename}",
                                   f"{ttest_ci_dir}/df_output_raw_glo_{fold_index}.csv",
-                                  f"{ttest_ci_dir}/df_output_raw_cleint_{client_id[0]}.csv",
-                                  f"{ttest_ci_dir}/df_output_raw_cleint_{client_id[1]}.csv",
+                                  f"{ttest_ci_dir}/df_output_raw_cleint_{client_id_list[0]}.csv",
+                                  f"{ttest_ci_dir}/df_output_raw_cleint_{client_id_list[1]}.csv",
                                   f"{ttest_ci_dir}/global_ci_{fold_index}.npy",
                                   f"{ttest_ci_dir}/local_ci_{fold_index}.npy"])
     
