@@ -22,7 +22,7 @@ setup(
     packages=find_packages(),
     python_requires='>=3.10',
     install_requires=[
-        'vantage6-algorithm-tools',
+        'vantage6-algorithm-tools==4.8.1',
         'pandas==2.2.3',
         'xlrd==2.0.1',
         'scikit-learn==1.6.1',
