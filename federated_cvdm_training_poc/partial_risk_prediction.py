@@ -22,15 +22,15 @@ except ModuleNotFoundError:
 
 from vantage6.algorithm.client import AlgorithmClient
 
-from importlib.metadata import version, PackageNotFoundError
+from importlib import metadata as md
 
-def _pkg_version(pkg: str) -> str:
-    try:
-        return version(pkg)
-    except PackageNotFoundError:
-        return "NOT_INSTALLED"
-    except Exception as e:
-        return f"UNKNOWN({e})"
+def log_vantage_dists(info_fn):
+    items = []
+    for d in md.distributions():
+        name = (d.metadata.get("Name") or "").strip()
+        if "vantage" in name.lower():
+            items.append(f"{name}=={d.version}")
+    info_fn("[pkg-check] " + (", ".join(sorted(items)) if items else "NO vantage* distributions found"))
 
 
 
@@ -72,10 +72,8 @@ def partial_risk_prediction(
 
     """ Decentral part of the algorithm """
 
-    info(f"[partial_risk_prediction] pkg versions: "
-     f"vantage6={_pkg_version('vantage6')}, "
-     f"vantage6-algorithm={_pkg_version('vantage6-algorithm')}, "
-     f"vantage6-client={_pkg_version('vantage6-client')}")
+    log_vantage_dists(info)
+
 
 
     # client_id = client.node.get()["id"]
