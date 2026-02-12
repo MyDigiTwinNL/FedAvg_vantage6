@@ -405,13 +405,14 @@ def plot_global_results(glo_result_list, figure_result_dir, metric):
     # plt.title("Global %s across update iteration" %metric)
     # plt.ylim([0,500])
 
-    fig.savefig(os.path.join(figure_result_dir, 'global_eval_%s_lifelines.png' %metric), dpi=500 ,bbox_inches='tight')
-    fig.savefig(os.path.join(figure_result_dir, 'global_eval_%s_lifelines.eps' %metric), dpi=500 ,bbox_inches='tight')
+    fig.savefig(os.path.join(figure_result_dir, 'global_eval_%s_global.png' %metric), dpi=500 ,bbox_inches='tight')
+    fig.savefig(os.path.join(figure_result_dir, 'global_eval_%s_global.eps' %metric), dpi=500 ,bbox_inches='tight')
 
+    global_plot_filename = 'global_eval_%s_global.png' %metric
 
     plt.close()
 
-    return
+    return global_plot_filename
 
 
 def plot_local_results(local_result_list, figure_result_dir, metric):
@@ -445,7 +446,8 @@ def plot_local_results(local_result_list, figure_result_dir, metric):
     fig.savefig(os.path.join(figure_result_dir, 'local_eval_%s_lifelines.png' %metric), dpi=500 ,bbox_inches='tight')
     fig.savefig(os.path.join(figure_result_dir, 'local_eval_%s_lifelines.eps' %metric), dpi=500 ,bbox_inches='tight')
 
+    local_plot_filename = 'local_eval_%s_lifelines.eps' %metric
 
     plt.close()
 
-    return
+    return local_plot_filename

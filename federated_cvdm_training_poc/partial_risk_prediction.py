@@ -271,5 +271,5 @@ def partial_risk_prediction(
     test_eval_dict = json.dumps(test_eval_dict)
 
     # Return results to the vantage6 server.
-    return {"params": model_params_json, "num_train_samples": train_data_size, "test_cm": test_cm_dict, "test_eval": test_eval_dict}
+    return {"params": model_params_json,  "client_id":client_id, "num_train_samples": train_data_size, "test_cm": test_cm_dict, "test_eval": test_eval_dict}
 

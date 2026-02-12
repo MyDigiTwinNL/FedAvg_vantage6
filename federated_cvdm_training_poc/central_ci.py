@@ -88,6 +88,15 @@ def central_ci(
 
     start_time = time.time()
 
+    df_client_raw_output_list = []
+    df_client_raw_output_filename_list =[]
+    client_id_list = []
+
+    # Create a folder for saving results for the corrected resampled t-test
+    ttest_dir = os.path.join(current_dir, "ttest_ci")
+    if not os.path.exists(ttest_dir):
+        os.makedirs(ttest_dir)
+
     ## Iterations of broadcasting weights/local weight updating/sending back/aggregation
     for i in range(num_update_iter):
         '''
@@ -173,6 +182,8 @@ def central_ci(
             num_train_samples = r["num_train_samples"]
             params = json.loads(params) 
 
+            client_id = r["client_id"]
+
             test_cm = r["test_cm"]
             # test_cm = json2dict(test_cm)
             test_cm = json.loads(test_cm) 
@@ -193,6 +204,28 @@ def central_ci(
             params_list.append(params)
             num_train_samples_list.append(num_train_samples)
 
+
+            ## Save outputs of local models (risk_pred, y, e), at the last update
+            if i == num_update_iter-1
+                # Flatten the nested lists
+                flat_pred_risk = [item[0] for item in test_cm['risk_pred']]
+                flat_y = [item[0] for item in test_cm['y']]
+                flat_e = [item[0] for item in test_cm['e']]
+
+                # Create DataFrame
+                df_raw_output_client = pd.DataFrame({
+                    "pred_risk": flat_pred_risk,
+                    "y": flat_y,
+                    "e": flat_e
+                })
+
+                df_client_raw_output_list.append(df_raw_output_client)
+                temp_filepath = "df_output_raw_cleint_%s.csv" %(client_id)
+                df_client_raw_output_filename_list.append(temp_filepath)
+
+                client_id_list.append(client_id)
+
+
         ## Weighed averging of the weight from local models
         # See fed_avg function in utils.py
         avged_params = fed_avg(params_list, num_train_samples_list)
@@ -208,14 +241,33 @@ def central_ci(
         global_ci_list.append(glo_ci)
         local_ci_list.append(test_ci_list)
 
+        if i == num_update_iter-1
+            ## aggregated globale results
+
+            flat_pred_risk_glo = [item[0] for item in risk_pred_stack]
+            flat_y_glo = [item[0] for item in y_stack]
+            flat_e_glo = [item[0] for item in e_stack]
+
+            # Create DataFrame
+            df_raw_output_glo = pd.DataFrame({
+                "pred_risk": flat_pred_risk_glo,
+                "y": flat_y_glo,
+                "e": flat_e_glo
+            })
+
+            # Save df to the csv file  
+            temp_filepath_glo = os.path.join(ttest_dir, "df_output_raw_glo_%s.csv" %fold_index)
+            df_raw_output_glo.to_csv(temp_filepath_glo, index=False)
+
+
         ## Plot training curves
         current_dir = os.path.dirname(os.path.abspath(__file__))
         figure_result_dir = os.path.join(current_dir, "figure_ci_results_%s" %fold_index)
         if not os.path.exists(figure_result_dir):
             os.makedirs(figure_result_dir)
 
-        plot_global_results(global_ci_list, figure_result_dir, "C-statistic")
-        plot_local_results(local_ci_list, figure_result_dir, "C-statistic")
+        global_plot_filename = plot_global_results(global_ci_list, figure_result_dir, "C-statistic")
+        local_plot_filename = plot_local_results(local_ci_list, figure_result_dir, "C-statistic")
 
 
 
@@ -225,10 +277,10 @@ def central_ci(
 
     info(f"{i} iterations completed.")    
 
-    # Create a folder for saving results for the corrected resampled t-test
-    ttest_dir = os.path.join(current_dir, "ttest_ci")
-    if not os.path.exists(ttest_dir):
-        os.makedirs(ttest_dir)
+    for ind in range(len(df_client_raw_output_list)):
+        df_calib = df_client_raw_output_list[ind]
+        df_calib_filname = os.path.join(ttest_dir, df_client_raw_output_filename_list[ind])
+        df_calib.to_csv(df_calib_filname, index=False)
 
     # Save C-statistic results for for the corrected resampled t-test
     info(f"Saving C-statistics on {ttest_dir} folder...")    
@@ -243,10 +295,15 @@ def central_ci(
     ttest_ci_dir = os.path.join(current_dir, "ttest_ci")
 
     encoded_files = encode_files([agg_weight_filename,
-                                  f"{figure_result_dir}/global_eval_C-statistic_lifelines.png",
+                                  f"{figure_result_dir}/{global_plot_filename}",
+                                  f"{figure_result_dir}/{local_plot_filename}",
+                                  f"{ttest_ci_dir}/df_output_raw_glo_{fold_index}.csv",
+                                  f"{ttest_ci_dir}/df_output_raw_cleint_{client_id[0]}.csv",
+                                  f"{ttest_ci_dir}/df_output_raw_cleint_{client_id[1]}.csv",
                                   f"{ttest_ci_dir}/global_ci_{fold_index}.npy",
                                   f"{ttest_ci_dir}/local_ci_{fold_index}.npy"])
     
+
     return json.dumps({"model_output_path":agg_weight_filename,
                        "encoded_output_files":encoded_files,
                        "iterations":i,
