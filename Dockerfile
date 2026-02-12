@@ -9,6 +9,11 @@ ARG PKG_NAME="federated_cvdm_training_poc"
 COPY . /app
 #RUN pip install     /app
 RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu /app
+RUN pip install --no-cache-dir --force-reinstall \
+  "vantage6-algorithm-tools==4.8.1" \
+  "vantage6-common==4.8.1" \
+  "vantage6-client==4.8.1"
+
 
 
 # Set environment variable to make name of the package available within the
