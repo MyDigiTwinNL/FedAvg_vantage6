@@ -15,7 +15,18 @@ from .utils import *
 from .output_encoders import encode_files
 from sklearn.metrics import confusion_matrix
 from vantage6.algorithm.tools.util import info, warn, error
-from vantage6.algorithm.tools.decorators import algorithm_client
+
+
+# Vantage6 decorator import (compatible across versions)
+try:
+    from vantage6.algorithm.tools.decorators import algorithm_client
+except ModuleNotFoundError:
+    from vantage6.algorithm.decorators import algorithm_client
+
+
+import time
+
+
 from vantage6.algorithm.client import AlgorithmClient
 
 ## Set random seed for reproducibility and the same initialization

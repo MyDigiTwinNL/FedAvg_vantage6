@@ -10,8 +10,17 @@ import pandas as pd
 from typing import Any
 
 from vantage6.algorithm.tools.util import info, warn, error
-from vantage6.algorithm.tools.decorators import algorithm_client
-from vantage6.algorithm.tools.decorators import data
+
+
+# Vantage6 decorator imports (compatible across versions)
+try:
+    from vantage6.algorithm.tools.decorators import algorithm_client, data
+except ModuleNotFoundError:
+    from vantage6.algorithm.decorators import algorithm_client, data
+
+
+
+
 from vantage6.algorithm.client import AlgorithmClient
 
 from .utils import *

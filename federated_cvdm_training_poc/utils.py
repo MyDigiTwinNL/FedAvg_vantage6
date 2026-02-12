@@ -279,6 +279,10 @@ def np2tensor(X_array, e_array, y_array):
 
 
 def fed_avg(params_list, num_train_samples_list):
+    if not params_list:
+        raise ValueError("fed_avg: params_list is empty (no client results received)")
+    if not num_train_samples_list:
+        raise ValueError("fed_avg: num_train_samples_list is empty")
     avged_params = params_list[0]
     for key in params_list[0]:
         weighted_sum = np.zeros(avged_params[key].shape)
