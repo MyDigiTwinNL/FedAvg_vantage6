@@ -93,6 +93,7 @@ def central_ci(
     client_id_list = []
 
     # Create a folder for saving results for the corrected resampled t-test
+    current_dir = os.path.dirname(os.path.abspath(__file__))
     ttest_dir = os.path.join(current_dir, "ttest_ci")
     if not os.path.exists(ttest_dir):
         os.makedirs(ttest_dir)
@@ -261,7 +262,7 @@ def central_ci(
 
 
         ## Plot training curves
-        current_dir = os.path.dirname(os.path.abspath(__file__))
+        
         figure_result_dir = os.path.join(current_dir, "figure_ci_results_%s" %fold_index)
         if not os.path.exists(figure_result_dir):
             os.makedirs(figure_result_dir)
