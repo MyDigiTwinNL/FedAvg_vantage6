@@ -9,6 +9,8 @@ or directly to the user (if they requested partial results).
 import pandas as pd
 from typing import Any
 
+
+
 from vantage6.algorithm.tools.util import info, warn, error
 
 
@@ -22,6 +24,9 @@ except ModuleNotFoundError:
 
 
 from vantage6.algorithm.client import AlgorithmClient
+
+info(f"[partial_risk_prediction] vantage6 version inside container: {vantage6.__version__}")
+
 
 from .utils import *
 from .networks import DeepSurv

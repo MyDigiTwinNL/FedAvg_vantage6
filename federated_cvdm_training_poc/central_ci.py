@@ -29,6 +29,10 @@ import time
 
 from vantage6.algorithm.client import AlgorithmClient
 
+
+info(f"[central_ci] vantage6 version inside container: {vantage6.__version__}")
+
+
 ## Set random seed for reproducibility and the same initialization
 torch.manual_seed(0)
 torch.use_deterministic_algorithms(True)
@@ -110,6 +114,37 @@ def central_ci(
         info("Waiting for results")
         results = client.wait_for_results(task_id=task.get("id"))
         info("Results obtained!")
+
+        # Robust guard
+        subtask_id = task.get("id")
+
+        # ---- GUARD: make sure we actually received results ----
+        if results is None:
+            error(f"[central_ci] wait_for_results returned None for subtask {subtask_id}")
+            raise RuntimeError(f"No results (None) for subtask {subtask_id}")
+
+        # Some v6 versions return list, others return dict with 'data'
+        if isinstance(results, dict):
+            data = results.get("data", [])
+        else:
+            data = results
+
+        if not data:
+            error(f"[central_ci] EMPTY results for subtask {subtask_id}. Cannot FedAvg.")
+            # Try to list results that may exist anyway (helps debugging)
+            try:
+                res_list = client.result.list(task_id=subtask_id)
+                error(f"[central_ci] result.list(task_id={subtask_id}) => {res_list}")
+            except Exception as e:
+                error(f"[central_ci] Also failed to list results for subtask {subtask_id}: {e}")
+
+            raise RuntimeError(
+                f"Subtask {subtask_id} returned no results to central (status polling or result retrieval failed)"
+            )
+
+        # From here on, use `data` instead of `results`
+        results = data
+
 
         params_list =[] # params here indicate network parameters; here, model weight
         num_train_samples_list = [] # the number of training samples for weighted averaging
