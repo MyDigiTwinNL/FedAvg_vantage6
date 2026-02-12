@@ -1,4 +1,4 @@
-vantage6-algorithm-tools
+vantage6-algorithm-tools==4.8.1
 pandas
 xlrd
 scikit-learn
