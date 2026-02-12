@@ -31,6 +31,15 @@ import time
 from vantage6.algorithm.client import AlgorithmClient
 
 
+from importlib.metadata import version, PackageNotFoundError
+
+def _pkg_version(pkg: str) -> str:
+    try:
+        return version(pkg)
+    except PackageNotFoundError:
+        return "NOT_INSTALLED"
+    except Exception as e:
+        return f"UNKNOWN({e})"
 
 
 
@@ -61,7 +70,11 @@ def central_ci(
     # central function.
     # get all organizations (ids) within the collaboration so you can send a task to them.
     
-    info(f"[central_ci] vantage6 version inside container: {vantage6.__version__}")
+    info(f"[central_ci] pkg versions: "
+     f"vantage6={_pkg_version('vantage6')}, "
+     f"vantage6-algorithm={_pkg_version('vantage6-algorithm')}, "
+     f"vantage6-client={_pkg_version('vantage6-client')}")
+
 
     organizations = client.organization.list()
     org_ids = [organization.get("id") for organization in organizations]

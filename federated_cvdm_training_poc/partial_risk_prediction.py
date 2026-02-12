@@ -20,11 +20,17 @@ try:
 except ModuleNotFoundError:
     from vantage6.algorithm.decorators import algorithm_client, data
 
-
-
-
 from vantage6.algorithm.client import AlgorithmClient
 
+from importlib.metadata import version, PackageNotFoundError
+
+def _pkg_version(pkg: str) -> str:
+    try:
+        return version(pkg)
+    except PackageNotFoundError:
+        return "NOT_INSTALLED"
+    except Exception as e:
+        return f"UNKNOWN({e})"
 
 
 
@@ -66,7 +72,11 @@ def partial_risk_prediction(
 
     """ Decentral part of the algorithm """
 
-    info(f"[partial_risk_prediction] vantage6 version inside container: {vantage6.__version__}")
+    info(f"[partial_risk_prediction] pkg versions: "
+     f"vantage6={_pkg_version('vantage6')}, "
+     f"vantage6-algorithm={_pkg_version('vantage6-algorithm')}, "
+     f"vantage6-client={_pkg_version('vantage6-client')}")
+
 
     # client_id = client.node.get()["id"]
     client_id = client.organization_id
