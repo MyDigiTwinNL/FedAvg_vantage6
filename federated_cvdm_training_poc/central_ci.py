@@ -10,6 +10,7 @@ import json
 import torch
 import random
 import numpy as np
+import pandas as pd
 from typing import Any
 from .utils import *
 from .output_encoders import encode_files

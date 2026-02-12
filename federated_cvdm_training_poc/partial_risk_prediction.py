@@ -179,16 +179,16 @@ def partial_risk_prediction(
         model.train()
         for X, y, e in train_loader:
 
-            info(f"Epoch {epoch} - step 1 ")
+            # info(f"Epoch {epoch} - step 1 ")
             X = X.to(device)
             y = y.to(device)
             e = e.to(device)
-            info(f"Epoch {epoch} - step 2 ")
+            # info(f"Epoch {epoch} - step 2 ")
             risk_pred = model(X)
             risk_pred = risk_pred.to(device)
-            info(f"Epoch {epoch} - step 3 ")
+            # info(f"Epoch {epoch} - step 3 ")
             train_loss = criterion(risk_pred, y, e, model)
-            info(f"Epoch {epoch} - step 4 ")
+            # info(f"Epoch {epoch} - step 4 ")
             total_train_loss = total_train_loss + train_loss.item()
             train_c = c_index(-risk_pred, y, e)
             total_train_c = total_train_c + train_c
@@ -196,13 +196,13 @@ def partial_risk_prediction(
             total_train_step += 1.0
             # print ("train_c", train_c)
             # updates parameters
-            info(f"Epoch {epoch} - step 5 ")
+            # info(f"Epoch {epoch} - step 5 ")
             optimizer.zero_grad()
-            info(f"Epoch {epoch} - step 6 ")
+            # info(f"Epoch {epoch} - step 6 ")
             train_loss.backward()
-            info(f"Epoch {epoch} - step 7 ")
+            # info(f"Epoch {epoch} - step 7 ")
             optimizer.step()
-            info(f"Epoch {epoch} - step 8 ")
+            # info(f"Epoch {epoch} - step 8 ")
 
         train_loss_list.append(total_train_loss/total_train_step)
         train_ci_list.append(total_train_c/total_train_step)
