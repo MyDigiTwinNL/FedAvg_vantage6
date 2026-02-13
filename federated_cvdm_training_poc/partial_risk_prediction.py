@@ -118,7 +118,7 @@ def partial_risk_prediction(
     # print ("client_id", client_id)
     info(f"client_id {client_id} ")
 
-    df1 = drop_duplicated_header_rows(df1)
+    df1 = drop_duplicated_header_rows_strict(df1)
 
     # Missing predictor data imputation by means of multiple imputation by chained equations
     imputer = IterativeImputer(random_state=0, max_iter=5, keep_empty_features=True) # keep empty features to eschew errors during the development (if the array include dummy columns)
