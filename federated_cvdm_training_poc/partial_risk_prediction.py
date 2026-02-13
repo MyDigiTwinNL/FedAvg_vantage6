@@ -50,6 +50,34 @@ from sklearn.impute import IterativeImputer
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+def drop_duplicated_header_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Drop rows that are duplicated CSV header lines inside the file.
+    Typical symptom: a row contains literal strings equal to column names
+    (e.g., 'GENDER' appears as a value under column GENDER).
+    """
+    if df is None or df.empty:
+        return df
+
+    cols = list(df.columns)
+    if not cols:
+        return df
+
+    # Count how many columns match their own column-name in each row
+    hits = np.zeros(len(df), dtype=int)
+    for c in cols:
+        hits += df[c].astype(str).str.strip().eq(str(c).strip()).to_numpy(dtype=int)
+
+    # Mark as header-like if >= half of columns match their own names
+    threshold = max(2, int(0.5 * len(cols)))
+    mask = hits >= threshold
+
+    if mask.any():
+        df = df.loc[~mask].copy()
+        df.reset_index(drop=True, inplace=True)
+
+    return df
+
 @data(1)
 @algorithm_client
 def partial_risk_prediction(
@@ -81,6 +109,9 @@ def partial_risk_prediction(
     # print ("update_iter", update_iter)
     # print ("client_id", client_id)
     info(f"client_id {client_id} ")
+
+    df1 = drop_duplicated_header_rows(df1)
+
     # Missing predictor data imputation by means of multiple imputation by chained equations
     imputer = IterativeImputer(random_state=0, max_iter=5, keep_empty_features=True) # keep empty features to eschew errors during the development (if the array include dummy columns)
     lenfol_col = df1['LENFOL']
