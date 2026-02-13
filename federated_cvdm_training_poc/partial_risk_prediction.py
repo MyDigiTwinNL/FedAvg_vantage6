@@ -50,11 +50,13 @@ from sklearn.impute import IterativeImputer
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def drop_duplicated_header_rows(df: pd.DataFrame) -> pd.DataFrame:
+import pandas as pd
+
+def drop_duplicated_header_rows_strict(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Drop rows that are duplicated CSV header lines inside the file.
-    Typical symptom: a row contains literal strings equal to column names
-    (e.g., 'GENDER' appears as a value under column GENDER).
+    Strictly drop only rows that are duplicated CSV headers.
+    A duplicated header row typically has values equal to the column names.
+    This version is designed to avoid removing any legitimate data rows.
     """
     if df is None or df.empty:
         return df
@@ -63,20 +65,26 @@ def drop_duplicated_header_rows(df: pd.DataFrame) -> pd.DataFrame:
     if not cols:
         return df
 
-    # Count how many columns match their own column-name in each row
-    hits = np.zeros(len(df), dtype=int)
-    for c in cols:
-        hits += df[c].astype(str).str.strip().eq(str(c).strip()).to_numpy(dtype=int)
+    # Compare each cell to its column name (string-wise)
+    colname_row = pd.Series({c: str(c).strip() for c in cols})
+    mask_full = df[cols].astype(str).apply(lambda s: s.str.strip()).eq(colname_row, axis=1).all(axis=1)
 
-    # Mark as header-like if >= half of columns match their own names
-    threshold = max(2, int(0.5 * len(cols)))
-    mask = hits >= threshold
+    # Extra-safe: also catch partial header rows by checking key outcome columns if present
+    key_cols = [c for c in ["FSTAT", "LENFOL"] if c in df.columns]
+    if key_cols:
+        mask_key = df[key_cols].astype(str).apply(lambda s: s.str.strip()).eq(
+            pd.Series({c: c for c in key_cols}), axis=1
+        ).all(axis=1)
+        mask = mask_full | mask_key
+    else:
+        mask = mask_full
 
     if mask.any():
         df = df.loc[~mask].copy()
         df.reset_index(drop=True, inplace=True)
 
     return df
+
 
 @data(1)
 @algorithm_client
