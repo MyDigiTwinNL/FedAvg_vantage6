@@ -86,6 +86,43 @@ def drop_duplicated_header_rows_strict(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+
+def _sanitize_outcomes(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Make outcomes safe for StratifiedKFold:
+      - FSTAT must be numeric and binary {0,1}
+      - LENFOL must be numeric
+      - Drop rows with missing outcomes
+    """
+    df = df.copy()
+
+    if "FSTAT" not in df.columns or "LENFOL" not in df.columns:
+        raise ValueError("Expected outcome columns FSTAT and LENFOL in dataframe")
+
+    # Coerce to numeric (mixed types -> NaN)
+    df["FSTAT"]  = pd.to_numeric(df["FSTAT"], errors="coerce")
+    df["LENFOL"] = pd.to_numeric(df["LENFOL"], errors="coerce")
+
+    # Drop missing outcomes
+    n_before = len(df)
+    df = df.dropna(subset=["FSTAT", "LENFOL"]).copy()
+    n_after = len(df)
+
+    # Force binary event indicator
+    # (handles {0,1}, {1,2}, booleans, floats, etc.)
+    df["FSTAT"] = (df["FSTAT"] > 0).astype(int)
+
+    # Log quick diagnostics
+    vc = df["FSTAT"].value_counts(dropna=False).to_dict()
+    info(f"[sanitize] dropped {n_before - n_after} rows with NaN outcomes; FSTAT counts={vc}")
+
+    # Must have 2 classes for stratification
+    if df["FSTAT"].nunique() < 2:
+        warn(f"[sanitize] FSTAT has <2 classes after cleaning: {vc}. Stratified split will fail.")
+        # We don't raise here; Option B will fall back to non-stratified split.
+    return df
+
+
 @data(1)
 @algorithm_client
 def partial_risk_prediction(
@@ -119,6 +156,7 @@ def partial_risk_prediction(
     info(f"client_id {client_id} ")
 
     df1 = drop_duplicated_header_rows_strict(df1)
+    df1 = _sanitize_outcomes(df1)
 
     # Missing predictor data imputation by means of multiple imputation by chained equations
     imputer = IterativeImputer(random_state=0, max_iter=5, keep_empty_features=True) # keep empty features to eschew errors during the development (if the array include dummy columns)
