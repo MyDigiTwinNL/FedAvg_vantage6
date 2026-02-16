@@ -248,16 +248,25 @@ def partial_risk_prediction(
     model = DeepSurv(dl_config['network']).to(device).float()  #  force float32
 
     learning_rate = dl_config['train']['learning_rate']
+
+        
     if avged_params is not None:
         avged_params = json2dict(avged_params)
 
-        #  ensure incoming weights become float32 (json->numpy tends to float64)
+        #  convert numpy/list -> torch.Tensor(float32) for load_state_dict
+        state = {}
         for k, v in avged_params.items():
-            avged_params[k] = np.array(v, dtype=np.float32)
+            # v can be list or np.ndarray
+            arr = np.asarray(v, dtype=np.float32)
+            state[k] = torch.from_numpy(arr)
 
-        model.load_state_dict(avged_params)
-        model = model.float()  #  re-force after loading
-        learning_rate = dl_config['train']['learning_rate'] / 10
+        missing, unexpected = model.load_state_dict(state, strict=False)
+        info(f"[load_state] missing={missing}, unexpected={unexpected}")
+
+        #  keep model float32
+        model = model.float()
+
+        learning_rate = dl_config["train"]["learning_rate"] / 10
 
 
         
