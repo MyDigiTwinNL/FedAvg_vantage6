@@ -159,7 +159,8 @@ def partial_risk_prediction(
     df1 = _sanitize_outcomes(df1)
 
     # Missing predictor data imputation by means of multiple imputation by chained equations
-    imputer = IterativeImputer(random_state=0, max_iter=5, keep_empty_features=True) # keep empty features to eschew errors during the development (if the array include dummy columns)
+    # imputer = IterativeImputer(random_state=0, max_iter=5, keep_empty_features=True) # keep empty features to eschew errors during the development (if the array include dummy columns)
+    imputer = SimpleImputer(strategy="median") # keep empty features to eschew errors during the development (if the array include dummy columns)
     lenfol_col = df1['LENFOL']
     fstat_col = df1['FSTAT']
     df_for_imputation = df1.drop(columns=['LENFOL', 'FSTAT']) # exclude outcome columns (labels)
@@ -194,6 +195,19 @@ def partial_risk_prediction(
     # val_X, val_e, val_y = np2tensor(val_X, val_e, val_y)
     # test_X, test_e, test_y = np2tensor(test_X, test_e, test_y)
 
+    ## Eschew OOM
+    train_X = train_X.astype("float32", copy=False)
+    val_X   = val_X.astype("float32", copy=False)
+    test_X  = test_X.astype("float32", copy=False)
+
+    train_y = train_y.astype("float32", copy=False)
+    val_y   = val_y.astype("float32", copy=False)
+    test_y  = test_y.astype("float32", copy=False)
+
+    train_e = train_e.astype("float32", copy=False)
+    val_e   = val_e.astype("float32", copy=False)
+    test_e  = test_e.astype("float32", copy=False)
+
     ## Prepare dataset (PyTorch data primitive) fed into PyTorch model
     train_dataset = EventDataset(train_X, train_e, train_y)
     val_dataset = EventDataset(val_X, val_e, val_y)
@@ -204,7 +218,8 @@ def partial_risk_prediction(
     test_data_size = len(test_dataset)   
 
 
-    batchsize = 4096
+    # batchsize = 4096
+    batchsize = 1024
     
     train_loader = torch.utils.data.DataLoader(
         train_dataset, batch_size=batchsize)
