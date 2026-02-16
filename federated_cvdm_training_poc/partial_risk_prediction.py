@@ -46,7 +46,7 @@ from torch.optim import Adam
 import torch.optim as optim
 
 from sklearn.experimental import enable_iterative_imputer
-from sklearn.impute import IterativeImputer
+from sklearn.impute import IterativeImputer, SimpleImputer
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
