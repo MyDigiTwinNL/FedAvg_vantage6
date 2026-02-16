@@ -7,6 +7,7 @@ encryption if that is enabled). From there, they are sent to the partial task
 or directly to the user (if they requested partial results).
 """
 import pandas as pd
+import numpy as np
 from typing import Any
 
 import vantage6
@@ -231,16 +232,35 @@ def partial_risk_prediction(
 
     #info("Create a neural network based on the configuration specified in the ini file")
     ## Create a neural network based on the configuration specified in the ini file
-    model = DeepSurv(dl_config['network']).to(device)
 
-    # Learning rate
+    # model = DeepSurv(dl_config['network']).to(device)
+
+    # # Learning rate
+    # learning_rate = dl_config['train']['learning_rate']
+    # # Load the aggregated weight received from the server 
+    # if avged_params is not None:
+    #     # Use global weight by fedavg
+    #     avged_params = json2dict(avged_params)
+    #     model.load_state_dict(avged_params)
+    #     learning_rate = dl_config['train']['learning_rate']/10
+
+
+    model = DeepSurv(dl_config['network']).to(device).float()  #  force float32
+
     learning_rate = dl_config['train']['learning_rate']
-    # Load the aggregated weight received from the server 
     if avged_params is not None:
-        # Use global weight by fedavg
         avged_params = json2dict(avged_params)
+
+        #  ensure incoming weights become float32 (json->numpy tends to float64)
+        for k, v in avged_params.items():
+            avged_params[k] = np.array(v, dtype=np.float32)
+
         model.load_state_dict(avged_params)
-        learning_rate = dl_config['train']['learning_rate']/10
+        model = model.float()  #  re-force after loading
+        learning_rate = dl_config['train']['learning_rate'] / 10
+
+
+        
 
     #info("Objective function")
     # Objective function
@@ -272,9 +292,9 @@ def partial_risk_prediction(
         for X, y, e in train_loader:
 
             # info(f"Epoch {epoch} - step 1 ")
-            X = X.to(device)
-            y = y.to(device)
-            e = e.to(device)
+            X = X.to(device, dtype=torch.float32)
+            y = y.to(device, dtype=torch.float32)
+            e = e.to(device, dtype=torch.float32)
             # info(f"Epoch {epoch} - step 2 ")
             risk_pred = model(X)
             risk_pred = risk_pred.to(device)
@@ -305,9 +325,9 @@ def partial_risk_prediction(
         with torch.no_grad():
             for X, y, e in val_loader:
 
-                X = X.to(device, dtype=float)
-                y = y.to(device, dtype=float)
-                e = e.to(device, dtype=float)
+                X = X.to(device, dtype=torch.float32)
+                y = y.to(device, dtype=torch.float32)
+                e = e.to(device, dtype=torch.float32)
 
                 risk_pred = model(X)
                 risk_pred = risk_pred.to(device)
@@ -339,9 +359,9 @@ def partial_risk_prediction(
     with torch.no_grad():
         for X, y, e in test_loader:
 
-            X = X.to(device, dtype=float)
-            y = y.to(device, dtype=float)
-            e = e.to(device, dtype=float)
+            X = X.to(device, dtype=torch.float32)
+            y = y.to(device, dtype=torch.float32)
+            e = e.to(device, dtype=torch.float32)
             risk_pred = model(X)
             risk_pred = risk_pred.to(device)
             test_c = c_index(-risk_pred, y, e)
