@@ -266,7 +266,8 @@ def partial_risk_prediction(
         #  keep model float32
         model = model.float()
 
-        learning_rate = dl_config["train"]["learning_rate"] / 10
+        # learning_rate = dl_config["train"]["learning_rate"] / 10
+        learning_rate = dl_config["train"]["learning_rate"] / 2
 
 
         
