@@ -379,6 +379,7 @@ def partial_risk_prediction(
     test_cm_dict['y'] = y.numpy().tolist()
     test_cm_dict['e'] = e.numpy().tolist()
     test_eval_dict['ci'] = test_c.tolist()
+    info(f"test ci {test_c} - checkout")
 
     
     ## Return client's weights (after local training)
