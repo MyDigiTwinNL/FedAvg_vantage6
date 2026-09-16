@@ -159,23 +159,59 @@ def partial_risk_prediction(
     df1 = drop_duplicated_header_rows_strict(df1)
     df1 = _sanitize_outcomes(df1)
 
-    # Missing predictor data imputation by means of multiple imputation by chained equations
-    # imputer = IterativeImputer(random_state=0, max_iter=5, keep_empty_features=True) # keep empty features to eschew errors during the development (if the array include dummy columns)
-    imputer = SimpleImputer(strategy="median") # keep empty features to eschew errors during the development (if the array include dummy columns)
-    lenfol_col = df1['LENFOL']
-    fstat_col = df1['FSTAT']
-    df_for_imputation = df1.drop(columns=['LENFOL', 'FSTAT']) # exclude outcome columns (labels)
-    imputer.fit(df_for_imputation)
-    imputed_array = imputer.transform(df_for_imputation)
-    df_imputed = pd.DataFrame(imputed_array, columns = df_for_imputation.columns)
-    df_imputed['LENFOL'] = lenfol_col
-    df_imputed['FSTAT'] = fstat_col
-
+    # -----------------------------------------------------------------
+    # REVISION UPDATE 2 (Reviewer 4, opening comment on preprocessing).
+    #
+    # Positional integer index. _sanitize_outcomes() drops rows without
+    # resetting the index, while ci_split() addresses the folds with .loc using
+    # the POSITIONAL indices returned by StratifiedKFold, and the outcome
+    # columns are reattached by position below. Without this reset the two can
+    # silently disagree and produce NaN outcomes.
+    # -----------------------------------------------------------------
+    df1 = df1.reset_index(drop=True)
 
     info("Computing on client side")
-    # train_df, val_df, test_df = tt_split(df_imputed)
+
+    # -----------------------------------------------------------------
+    # Split BEFORE imputation.
+    #
+    # Previously the median was fitted on the full local dataset and the split
+    # was applied afterwards, so information from the held-out participants
+    # could influence the imputed training values. The imputation median is now
+    # fitted on the TRAINING SPLIT ONLY and applied unchanged to the validation
+    # and test splits.
+    #
+    # Note that the outcome columns (LENFOL, FSTAT) never take part in the
+    # imputation, before or after this change.
+    # -----------------------------------------------------------------
     ## Split the data into 80%/10%/10% for training/validation/test
-    train_df, val_df, test_df = ci_split(df_imputed, n_fold = n_fold, fold_index = fold_index)
+    train_df, val_df, test_df = ci_split(df1, n_fold = n_fold, fold_index = fold_index)
+
+    outcome_keep = ['LENFOL', 'FSTAT']
+
+    def _impute_with(fitted_imputer, frame):
+        """Apply a fitted imputer to the predictors, keep the outcomes untouched."""
+        feats = frame.drop(columns=outcome_keep)
+        arr = fitted_imputer.transform(feats)
+        outd = pd.DataFrame(arr, columns=feats.columns, index=frame.index)
+        for c in outcome_keep:
+            outd[c] = frame[c].values   # by position, not by label
+        return outd
+
+    # imputer = IterativeImputer(random_state=0, max_iter=5, keep_empty_features=True)
+    imputer = SimpleImputer(strategy="median")
+    imputer.fit(train_df.drop(columns=outcome_keep))   # TRAINING SPLIT ONLY
+
+    train_df = _impute_with(imputer, train_df)
+    val_df   = _impute_with(imputer, val_df)
+    test_df  = _impute_with(imputer, test_df)
+
+    # Record the medians actually used, so each fold is auditable from the node
+    # logs. This also supplies the numbers for the median-displacement table
+    # requested in the revision guide, without a separate analysis run.
+    _med = dict(zip(train_df.drop(columns=outcome_keep).columns,
+                    np.round(imputer.statistics_, 4).tolist()))
+    info(f"[impute] fold={fold_index} fitted on n_train={len(train_df)}; medians={_med}")
 
     #info("Vertical data split")
     ## Vertical data split: X (feature), e (FSTAT), y(LENFOL)

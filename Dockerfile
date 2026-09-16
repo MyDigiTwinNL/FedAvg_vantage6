@@ -1,5 +1,5 @@
 # basic python3 image as base
-FROM harbor2.vantage6.ai/infrastructure/algorithm-base
+FROM ghcr.io/mydigitwinnl/federated_cvdm_training_poc:v6ver481v3_oomhandlerv4_lr
 
 # This is a placeholder that should be overloaded by invoking
 # docker build with '--build-arg PKG_NAME=...'
